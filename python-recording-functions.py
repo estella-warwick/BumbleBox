@@ -5,12 +5,14 @@ from picamera2.encoders import JpegEncoder
 from picamera2.encoders import H264Encoder
 from sys import getsizeof
 import time
-import numpy
+import numpy as np
 import cv2
 from PIL import Image
 import os
+import subprocess
+import ffmpeg
 
-def picam2_record_mjpeg(filename, outdir, recording_time=20, quality=95, size=(4056,3040), imformat="RGB888", fps=6, buffer_count=2):
+def picam2_record_mjpeg(filename, outdir, recording_time=20, quality=95, size=(4056,3040), imformat="RGB888", fps=4, buffer_count=2):
 	frame_duration_us = int(1/fps * 10**6)
 	picam2 = Picamera2()
 	video_config = picam2.create_video_configuration(main={"size": size, "format": imformat}, controls={"FrameDurationLimits": (frame_duration_us, frame_duration_us)}, buffer_count=2)
@@ -43,7 +45,7 @@ def folder_jpgs2mjpeg(dirpath):
 
 
 
-def picam2_YUV420array2mjpeg(recording_time=5, quality="maximum", fps=6, outdir='/mnt/bombusbox/burstcapturejpgs/', filename='testpicam2_yuv2vid', imtype="yuv"): #make options "yuv", "rgb", "y", "all"
+def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir='/mnt/bombusbox/burstcapturejpgs/', filename='testpicam2_yuv2vid', imtype="y"): #make options "yuv", "rgb", "y", "all"
 	
 	picam2 = Picamera2()
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (4032,3040)})
@@ -69,7 +71,7 @@ def picam2_YUV420array2mjpeg(recording_time=5, quality="maximum", fps=6, outdir=
 		i += 1
 	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
 	sizeof = getsizeof(frames_dict)
-	print(f"Size of dictionary storing the frames: {sizeof}")
+	print(f"Size of dictionary storing the frames (in bytes): {sizeof}")
 	
 	if imtype =="y":
 		for frame_number in frames_dict:
@@ -107,10 +109,13 @@ def picam2_YUV420array2mjpeg(recording_time=5, quality="maximum", fps=6, outdir=
 	else:
 		print("Error: imtype must equal either 'y', 'yuv', 'rgb', or 'all'")
 		return print("Exit code: 1")
-
-	cmd = 'for i in ' + outdir + '*.jpg: do ffmpeg -i "$i" "${i%.*}.mjpeg"; done'
+	
+	print("now turning the jpgs into an mjpeg video...")
+	#cmd = 'for i in ' + outdir + '*.jpg: do ffmpeg -i "$i" "${i%.*}.mjpeg"; done'
+	#cmd = 'for i in /mnt/bombusbox/burstcapturejpgs/*.jpg; do ffmpeg -i "$i" "${i%.*}.mjpeg"; done'
+	cmd = 'ffmpeg -i /mnt/bombusbox/burstcapturejpgs/*.jpg -vf fps=10 -pix_fmt yuv420p /mnt/bombusbox/burstcapturejpgs/output.mp4'
 	os.system(cmd)
-
+	print("Success?")
 
 #def write_jpgs2mp4(numframes, jpgdir='/mnt/bombusbox/burstcapturejpgs', cv2.VideoWriter_fourcc(*'mp4'), fps=10, size=(4032,3040):
 	
@@ -175,10 +180,26 @@ def picam2_YUV420arraycapture_timetest(recording_time=10, fps=15, quality="maxim
 
 
 
-
-
-
-
+def x265vidwrite(filename, images, framerate=5, vcodec='libx265'):
+    if not isinstance(images, np.ndarray):
+        images = np.asarray(images)
+        print(images.shape)
+    n,channels,height,width = images.shape
+    process = (
+        ffmpeg
+            .input('pipe:', format='rawvideo', pix_fmt='yuv420p', r=framerate, s='{}x{}'.format(width, height))
+            .output(filename, pix_fmt='yuv420p', vcodec=vcodec)
+            .overwrite_output()
+            .run_async(pipe_stdin=True)
+    )
+    for frame in images:
+        process.stdin.write(
+            frame
+                .astype(np.uint8)
+                .tobytes()
+        )
+    process.stdin.close()
+    process.wait()
 
 
 
@@ -191,10 +212,7 @@ def picam2_YUV420arraycapture_timetest(recording_time=10, fps=15, quality="maxim
 
 
 ### date is 5/30, trying to use just opencv to write to .mp4 or h265
-def arraycapture_2_mp4(recording_time=5, codec = 'mp4', quality="maximum", fps=6, outdir='/mnt/bombusbox/burstcapturejpgs/', filename='testpicam2_yuv2vid', imtype="yuv"):
-	
-	import cv2
-	import Picamera2
+def arraycapture_2_mp4(recording_time=20, codec='mp4', quality="maximum", fps=6, outdir='/mnt/bombusbox/', filename='testpicam2_yuv2vid', imtype="yuv"):
 	
 	picam2 = Picamera2()
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (4032,3040)})
@@ -213,30 +231,53 @@ def arraycapture_2_mp4(recording_time=5, codec = 'mp4', quality="maximum", fps=6
 		timestamp = time.time() - start_time
 		
 		yuv420 = picam2.capture_array()
-		frames_list.append([yuv420, timestamp])
+		print(yuv420.shape)
+		frames_list.append([yuv420])
 		#yuv420 = yuv420[0:3040, :]
 		#frames_dict[f"frame_{i:03d}"] = [yuv420, timestamp]
-		#time.sleep(1/(fps+10))
+		time.sleep(1/(fps+1))
 		i += 1
 		
 	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
-	sizeof = getsizeof(frames_dict)
+	#sizeof = getsizeof(frames_dict)
 	sizeof = getsizeof(frames_list)
 	print(f"Size of dictionary storing the frames: {sizeof}")
 	
 	if codec == 'mp4':
-		vid_fourcc = VideoWriter_fourcc(*'MP4V')
-	elif code == 'h265':
+		vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+		out = cv2.VideoWriter('testvideo1.mp4', cv2.CAP_FFMPEG,vid_fourcc,10,(4032,3040)) #apiPreference=cv2.CAP_FFMPEG
+	
+	'''	
+	#elif codec == 'h265':
+		
+	#	x265vidwrite('testx265.mp4',frames_list)
+	
+		
+	
 		#look into this for HEVC encoding: https://stackoverflow.com/questions/61260182/how-to-output-x265-compressed-video-with-cv2-videowriter
+		#vid_fourcc = cv2.VideoWriter_fourcc(*'hvc1')
+		#out = cv2.VideoWriter('testh265.mp4', cv2.CAP_FFMPEG,vid_fourcc,5,(4032,3040)) #apiPreference=cv2.CAP_FFMPEG
+		
+		import ffmpeg
+
+		(
+			ffmpeg
+			.input('0.mp4')
+			.filter('fps', fps=5, round='up')
+			.output('out.mp4', vcodec='libx265')
+			.run()
+		)
+		
+	'''
 	
-	out = cv2.VideoWriter('testvideo.mp4', apiPreference=cv2.CAP_FFMPEG,vid_fourcc,10,(4032,3040))
-	
-	for i in frames_list:
-		frame = i[0]
+	for img in frames_list:
+		frame = img[0]
+		print(frame.size)
 		out.write(frame)
+		print(f'wrote frame {img}') 
 	out.release()
 	cv2.destroyAllWindows()
-	
+	'''
 	
 # okay this is trying to get the best video compression to work for our videos, making them into HEVC compressed mp4s. Need to use FFMPEG to do it,
 # so this function would be run inside of the create mp4 from RAM function, just if HEVC compression is wanted
@@ -249,8 +290,6 @@ def writeMp4withHEVC_CompressionFromRAM(outdir, filename, frames_list, width, he
 	import numpy as np
 	import subprocess as sp
 	import shlex
-
-	width, height, n_frames, fps = 1344, 756, 50, 25  # 50 frames, resolution 1344x756, and 25 fps
 
 	output_filename = filename + '.mp4'
 
@@ -266,15 +305,13 @@ def writeMp4withHEVC_CompressionFromRAM(outdir, filename, frames_list, width, he
 	# -i pipe:             ffmpeg input is a PIPE
 	# -vcodec libx265      Video codec: H.265 (HEVC)
 	# -pix_fmt yuv420p     Output video color space YUV420 (saving space compared to YUV444)
-	# -crf 24              Constant quality encoding (lower value for higher quality and larger output file).
+	# -crf 24              Constant quality encoding (lower value for higher quality and larger output file). ## This was originally 24 but I changed it to 18 for testing purposes
 	# {output_filename}    Output file name: output_filename (output.mp4)
-	process = sp.Popen(shlex.split(f'ffmpeg -y -s {width}x{height} -pixel_format bgr24 -f rawvideo -r {fps} -i pipe: -vcodec libx265 -pix_fmt yuv420p -crf 24 {output_filename}'), stdin=sp.PIPE)
+	process = sp.Popen(shlex.split(f'ffmpeg -y -s {width}x{height} -pixel_format bgr24 -f rawvideo -r {fps} -i pipe: -vcodec libx265 -pix_fmt yuv420p -crf 18 {output_filename}'), stdin=sp.PIPE)
 
 	# Build synthetic video frames and write them to ffmpeg input stream.
 	for i in frames_list:
-		# Build synthetic image for testing ("render" a video frame).
-		img = np.full((height, width, 3), 60, np.uint8)
-		cv2.putText(img, str(i+1), (width//2-100*len(str(i+1)), height//2+100), cv2.FONT_HERSHEY_DUPLEX, 10, (255, 30, 30), 20)  # Blue number
+		img = i[0]
 
 		# Write raw video frame to input stream of ffmpeg sub-process.
 		process.stdin.write(img.tobytes())
@@ -288,7 +325,7 @@ def writeMp4withHEVC_CompressionFromRAM(outdir, filename, frames_list, width, he
 	# Terminate the sub-process
 	process.terminate()  # Note: We don't have to terminate the sub-process (after process.wait(), the sub-process is supposed to be closed).
 		
-		
+	
 		
     
 def trackTagsFromRAM(frames_list):
@@ -311,7 +348,7 @@ def trackTagsFromRAM(frames_list):
 		frame = i[0]
 		
 		try:
-		   gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY) # -code copied
+		   gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		   clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
 		   cl1 = clahe.apply(gray)
 		   gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
@@ -352,17 +389,13 @@ def trackTagsFromRAM(frames_list):
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	
 	return df, df2, frame_num
-	
-
-
-
-
-
-
-
-
+	'''
 		
 if __name__ == '__main__':
 	
     #picam2_YUV420arraycapture_timetest()
-	cv2_arraycapture()
+	#arraycapture_2_mp4()
+	#picam2_YUV420array2mjpeg()
+	picam2_record_mjpeg('newbees1.mjpeg','/mnt/bombusbox/')
+	
+
