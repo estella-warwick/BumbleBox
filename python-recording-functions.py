@@ -212,7 +212,7 @@ def x265vidwrite(filename, images, framerate=5, vcodec='libx265'):
 
 
 ### date is 5/30, trying to use just opencv to write to .mp4 or h265
-def arraycapture_2_mp4(recording_time=20, codec='mp4', quality="maximum", fps=6, outdir='/mnt/bombusbox/', filename='testpicam2_yuv2vid', imtype="yuv"):
+def arraycapture_2_mp4(recording_time=2, codec='mp4', fps=6, outdir='/mnt/bombusbox/', filename='testpicam2_yuv2vid', imtype="yuv"):
 	
 	picam2 = Picamera2()
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (4032,3040)})
@@ -241,11 +241,14 @@ def arraycapture_2_mp4(recording_time=20, codec='mp4', quality="maximum", fps=6,
 	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
 	#sizeof = getsizeof(frames_dict)
 	sizeof = getsizeof(frames_list)
-	print(f"Size of dictionary storing the frames: {sizeof}")
+	#print(f"Size of dictionary storing the frames: {sizeof}")
 	
+	out = None
 	if codec == 'mp4':
 		vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-		out = cv2.VideoWriter('testvideo1.mp4', cv2.CAP_FFMPEG,vid_fourcc,10,(4032,3040)) #apiPreference=cv2.CAP_FFMPEG
+		out = cv2.VideoWriter('/mnt/bumblebox/data/testvideo_rgb.mp4',vid_fourcc,10,(4032,3040))
+		#out = cv2.VideoWriter('testvideo1.mp4',vid_fourcc,10,(4032,3040))
+		#out = cv2.VideoWriter('testvideo1.mp4', cv2.CAP_FFMPEG,vid_fourcc,10,(4032,3040)) #apiPreference=cv2.CAP_FFMPEG
 	
 	'''	
 	#elif codec == 'h265':
@@ -270,11 +273,23 @@ def arraycapture_2_mp4(recording_time=20, codec='mp4', quality="maximum", fps=6,
 		
 	'''
 	
-	for img in frames_list:
-		frame = img[0]
-		print(frame.size)
-		out.write(frame)
-		print(f'wrote frame {img}') 
+	for i, im_array in enumerate(frames_list):
+		frame = im_array[0]
+		print(frame.shape)
+		#frame = cv2.resize(frame, (4032, 3040))
+		rgb_im = cv2.cvtColor(frame, cv2.COLOR_YUV420p2RGB)
+		#gray_im = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
+		#frame = im_array[0]
+		#print(rgb_im.shape)
+		#img = Image.fromarray(frame)#, mode="YCbCr")
+		#print(img.size)
+		#print(img.shape)
+		#cv2.imwrite(str(i) + "gray.jpg", gray_im)
+		#cv2.imwrite(str(i) + "rawyuv.jpg", frame)
+		#cv2.imwrite(str(i) + "rgb.jpg", rgb_im)
+		#cv2.imwrite(str(i) + ".jpg", rgb_im)
+		out.write(rgb_im)
+		#print(f'wrote frame {img}') 
 	out.release()
 	cv2.destroyAllWindows()
 	'''
@@ -394,8 +409,8 @@ def trackTagsFromRAM(frames_list):
 if __name__ == '__main__':
 	
     #picam2_YUV420arraycapture_timetest()
-	#arraycapture_2_mp4()
+	arraycapture_2_mp4()
 	#picam2_YUV420array2mjpeg()
-	picam2_record_mjpeg('newbees1.mjpeg','/mnt/bombusbox/')
+	#picam2_record_mjpeg('newbees1.mjpeg','/mnt/bombusbox/')
 	
 
