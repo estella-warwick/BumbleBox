@@ -5,7 +5,7 @@ import cv2
 from cv2 import aruco
 import pandas
 import argparse
-from record_mjpeg import create_todays_folder
+from record_video import create_todays_folder
 import socket
 import time
 from datetime import date
@@ -19,18 +19,21 @@ from sys import getsizeof
 # then am going to track the tags from the frames_list object using the trackTagsfromRAM function
 # a nice thing would be to make the tracking parameters associated with the custom box and the koppert box toggle-able 
 
-def array_capture(recording_time, fps, width, height):
+#what about shutter speed?
+
+def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file):
 	
-	picam2 = Picamera2()
+	tuning = Picamera2.load_tuning_file(tuning_file)
+	picam2 = Picamera2(tuning=tuning)
+	picam2.set_controls({"ExposureTime": shutter_speed})
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (width,height)})
 	picam2.configure(preview)
 	picam2.start()
+	
 	time.sleep(2)
 	
 	print("Initializing data capture...")
 	print("Recording parameters:\n")
-	#print(f"	filename: {filename}")
-	#print(f"	directory: {outdir}")
 	print(f"	recording time: {recording_time}s")
 	print(f"	frames per second: {fps}")
 	print(f"	image width: {width}")
@@ -41,12 +44,11 @@ def array_capture(recording_time, fps, width, height):
 	frames_list = []
 	i = 0
 	
-	while ( (time.time() - start_time) < recording_time): #or (i <= fps*recording_time):
+	while ( (time.time() - start_time) < recording_time):
 		
 		timestamp = time.time() - start_time
 		print(f'frame {i} timestamp: {timestamp} seconds')
 		yuv420 = picam2.capture_array()
-		#print(yuv420.shape)
 		frames_list.append([yuv420])
 		#yuv420 = yuv420[0:3040, :]
 		#frames_dict[f"frame_{i:03d}"] = [yuv420, timestamp]
@@ -54,10 +56,9 @@ def array_capture(recording_time, fps, width, height):
 		i += 1
 	
 	finished = time.time()-start_time
-	print(f'finished capturing frames to arrays, captured {i} frames in {finished}')
+	print(f'finished capturing frames to arrays, captured {i} frames in {finished} seconds')
 	rate = i / finished
-	print(f'thats {rate} frames per second!')
-	#sizeof = getsizeof(frames_dict)
+	print(f'thats {rate} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
 	sizeof = getsizeof(frames_list)
 	print(f"Size of list storing the frames: {sizeof} bytes")
 	
@@ -120,15 +121,16 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, dictionary):
 				raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 		frame_num += 1
+		  
 	
 	df = pandas.DataFrame(raw)
 	df = pandas.DataFrame(raw)
 	df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	df.to_csv('identified_csv.csv', index=False)
+	df.to_csv('./testing/identified_csv.csv', index=False)
 	df2 = pandas.DataFrame(noID)
 	df2 = pandas.DataFrame(noID)
 	df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	df2.to_csv('potential_csv.csv', index=False)
+	df2.to_csv('./testing/potential_csv.csv', index=False)
 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	
@@ -171,11 +173,14 @@ def main():
 	
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
 	parser.add_argument('-p', '--data_folder_path', type=str, default='/mnt/bumblebox/data/', help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
-	parser.add_argument('-t', '--recording_time', type=int, default=2, help='the video recording time in seconds')
+	parser.add_argument('-t', '--recording_time', type=int, default=20, help='the video recording time in seconds')
 	parser.add_argument('-fps', '--frames_per_second', type=int, default=6, choices=range(0,10), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
+	parser.add_argument('-sh', '--shutter', type=int, default=2500, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
 	parser.add_argument('-w', '--width', type=int, default=4056, help='the width of the image in pixels')
 	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
 	parser.add_argument('-d', '--dictionary', default=aruco.DICT_4X4_50, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (default), 100, 250, or 1000).')
+	parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
+
 	args = parser.parse_args()
     
 	ret, todays_folder_path = create_todays_folder(args.data_folder_path)
@@ -198,10 +203,12 @@ def main():
 	print(args.recording_time)
 	print(args.frames_per_second)
 	
-	frames_list = array_capture(args.recording_time, args.frames_per_second, args.width, args.height)
+	frames_list = array_capture(args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file)
+	
 	print(type(frames_list))
 	print(len(frames_list))
-	trackTagsFromRAM(filename,todays_folder_path, frames_list, args.dictionary) #args.recording_time, args.quality, args.frames_per_second, args.dictionary)
+	
+	trackTagsFromRAM(filename,todays_folder_path, frames_list, args.dictionary)
 	
 	
 if __name__ == '__main__':

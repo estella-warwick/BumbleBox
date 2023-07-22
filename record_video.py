@@ -13,9 +13,11 @@ from sys import getsizeof
 import cv2
 
 
-def picam2_record_mp4(filename, outdir, recording_time, fps, width, height): #imformat="yuv" #have excluded imformat input because right now only functions by grabbing YUV frames, then converts them to RGB video. Maybe have a grayscale vs color option if possible?
+def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, width, height, tuning_file): #imformat="yuv" #have excluded imformat input because right now only functions by grabbing YUV frames, then converts them to RGB video. Maybe have a grayscale vs color option if possible?
 	
-	picam2 = Picamera2()
+	tuning = Picamera2.load_tuning_file(tuning_file)
+	picam2 = Picamera2(tuning=tuning)
+	picam2.set_controls({"ExposureTime": shutter_speed})
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (width, height)})
 	picam2.align_configuration(preview) #might cause an issue?
 	picam2.configure(preview)
@@ -29,7 +31,7 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, width, height): #im
 	print(f"	frames per second: {fps}")
 	print(f"	image width: {width}")
 	print(f"	image width: {height}")
-	print(f"	image format: RGB888")
+	print(f"	output image format: RGB888")
 
 	time.sleep(2)
 	start_time = time.time()
@@ -50,10 +52,10 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, width, height): #im
 		time.sleep(1/(fps+1))
 		i += 1
 		
-	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
-	#sizeof = getsizeof(frames_dict)
-	#sizeof = getsizeof(frames_list)
-	#print(f"Size of dictionary storing the frames: {sizeof}")
+	finished = time.time()-start_time
+	print(f'finished capturing frames to arrays, captured {i} frames in {finished} seconds')
+	rate = i / finished
+	print(f'thats {rate} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
 	
 	output = outdir+filename+'.mp4'
 	vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
@@ -71,7 +73,7 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, width, height): #im
 	cv2.destroyAllWindows()
 
 
-def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, width, height, imformat="RGB888", buffer_count=2):
+def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_speed, width, height, tuning_file, imformat="RGB888", buffer_count=2):
 	
 	print("Initializing recording...")
 	print("Recording parameters:\n")
@@ -87,7 +89,10 @@ def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, width, h
 		    
 		    
 	frame_duration_microseconds = int(1/fps * 10**6)
-	picam2 = Picamera2()
+	
+	tuning = Picamera2.load_tuning_file(tuning_file)
+	picam2 = Picamera2(tuning=tuning)
+	picam2.set_controls({"ExposureTime": shutter_speed})
 	video_config = picam2.create_video_configuration(main={"size": (width, height), "format": imformat}, controls={"FrameDurationLimits": (frame_duration_microseconds, frame_duration_microseconds)}, buffer_count=2)
 	picam2.align_configuration(video_config)
 	picam2.configure(video_config)
