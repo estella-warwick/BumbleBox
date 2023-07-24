@@ -11,16 +11,36 @@ import os
 import subprocess
 from sys import getsizeof
 import cv2
+from libcamera import controls
 
 
-def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, width, height, tuning_file): #imformat="yuv" #have excluded imformat input because right now only functions by grabbing YUV frames, then converts them to RGB video. Maybe have a grayscale vs color option if possible?
+def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, width, height, tuning_file, noise_reduction_mode, digital_zoom): #imformat="yuv" #have excluded imformat input because right now only functions by grabbing YUV frames, then converts them to RGB video. Maybe have a grayscale vs color option if possible?
 	
 	tuning = Picamera2.load_tuning_file(tuning_file)
 	picam2 = Picamera2(tuning=tuning)
-	picam2.set_controls({"ExposureTime": shutter_speed})
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (width, height)})
 	picam2.align_configuration(preview) #might cause an issue?
 	picam2.configure(preview)
+	
+	'''set shutterspeed (or exposure time)'''
+	picam2.set_controls({"ExposureTime": shutter_speed}) #"NoiseReductionMode": controls.draft.NoiseReductionModeEnum.Fast})
+	
+	'''set noise reduction mode'''
+	if noise_reduction_mode != "Auto":
+		try:
+			noise_reduction_mode = getattr(controls.draft.NoiseReductionModeEnum, noise_reduction_mode)
+			picam2.set_controls({"NoiseReductionMode": noise_reduction_mode})
+		except:
+			print("The variable 'noise_reduction_mode' in the setup.py script is set incorrectly. Please change it and save that script. It should be 'Auto', 'Off', 'Fast', or 'HighQuality'")
+	
+	'''set digital zoom'''
+	if digital_zoom == type(tuple) and len(digital_zoom) == 4:
+		picam2.set_controls({"ScalerCrop": digital_zoom})
+	
+	elif digital_zoom != None:
+		print("The variable 'recording_digital_zoom' in the setup.py script is set incorrectly. It should be either 'None' or a value that looks like this: (offset_x,offset_y,new_width,new_height) for ex. (1000,2000,300,300)")
+	
+	'''start the camera'''
 	picam2.start()
 	
 	print("Initializing recording...")
@@ -73,7 +93,7 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	cv2.destroyAllWindows()
 
 
-def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_speed, width, height, tuning_file, imformat="RGB888", buffer_count=2):
+def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_speed, width, height, tuning_file, noise_reduction_mode, digital_zoom, imformat="RGB888", buffer_count=2):
 	
 	print("Initializing recording...")
 	print("Recording parameters:\n")
@@ -147,9 +167,13 @@ def main():
 	parser.add_argument('-t', '--recording_time', type=int, default=20, help='the video recording time in seconds')
 	parser.add_argument('-q', '--quality', type=int, default=95, choices=range(0,100), help='jpg image quality setting from 0-100. The higher the number, the better quality, and the bigger the file.')
 	parser.add_argument('-fps', '--frames_per_second', type=int, default=6, choices=range(0,10), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
+	parser.add_argument('-sh', '--shutter', type=int, default=2500, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
 	parser.add_argument('-w', '--width', type=int, default=4056, help='the width of the image in pixels')
 	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
 	parser.add_argument('-cd', '--codec', type=str, default='mp4', choices=['mp4','mjpeg'], help='choose to save either mp4 videos or mjpeg videos!')
+	parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
+	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
+	parser.add_argument('-z', '--digital_zoom', type=tuple, default=None, help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
 	args = parser.parse_args()
     
 	ret, todays_folder_path = create_todays_folder(args.data_folder_path)
@@ -174,9 +198,9 @@ def main():
 	print(args.frames_per_second)
 	
 	if args.codec == 'mp4':
-		picam2_record_mp4(filename,todays_folder_path, args.recording_time, args.frames_per_second, args.width, args.height)
+		picam2_record_mp4(filename,todays_folder_path, args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	if args.codec == 'mjpeg':
-		picam2_record_mjpeg(filename,todays_folder_path, args.recording_time, args.quality, args.frames_per_second, args.width, args.height)
+		picam2_record_mjpeg(filename,todays_folder_path, args.recording_time, args.quality, args.frames_per_second, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	
 	
 if __name__ == '__main__':
