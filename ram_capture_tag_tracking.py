@@ -46,7 +46,7 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 		picam2.set_controls({"ScalerCrop": digital_zoom})
 	
 	elif digital_zoom != None:
-		print("The variable 'recording_digital_zoom' in the setup.py script is set incorrectly. It should be either 'None' or a value that looks like this: (offset_x,offset_y,new_width,new_height) for ex. (1000,2000,300,300)"
+		print("The variable 'recording_digital_zoom' in the setup.py script is set incorrectly. It should be either 'None' or a value that looks like this: (offset_x,offset_y,new_width,new_height) for ex. (1000,2000,300,300)")
 	
 	'''start the camera'''
 	picam2.start()

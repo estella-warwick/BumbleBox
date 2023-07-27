@@ -14,6 +14,11 @@ import cv2
 from libcamera import controls
 
 
+
+
+
+
+
 def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, width, height, tuning_file, noise_reduction_mode, digital_zoom): #imformat="yuv" #have excluded imformat input because right now only functions by grabbing YUV frames, then converts them to RGB video. Maybe have a grayscale vs color option if possible?
 	
 	tuning = Picamera2.load_tuning_file(tuning_file)
@@ -93,6 +98,11 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	cv2.destroyAllWindows()
 
 
+
+
+
+
+
 def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_speed, width, height, tuning_file, noise_reduction_mode, digital_zoom, imformat="RGB888", buffer_count=2):
 	
 	print("Initializing recording...")
@@ -159,6 +169,13 @@ def create_todays_folder(dirpath):
 	
 	else:
 		return 0, todays_folder_path
+	
+
+
+
+
+
+
 	
 def main():
 	
