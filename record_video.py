@@ -82,7 +82,7 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	rate = i / finished
 	print(f'thats {rate} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
 	
-	output = outdir+filename+'.mp4'
+	output = outdir+'/'+filename+'.mp4'
 	vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 	out = cv2.VideoWriter(output,vid_fourcc,10,(4032,3040))
 	print("got here!")
@@ -129,7 +129,7 @@ def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_
 
 	picam2.start_preview()
 	encoder = JpegEncoder(q=quality)
-	output = outdir+filename+'.mjpeg'
+	output = outdir+'/'+filename+'.mjpeg'
 
 	picam2.start()
 	time.sleep(2)
@@ -145,7 +145,7 @@ def create_todays_folder(dirpath):
 	
 	today = date.today()
 	today = today.strftime('%Y-%m-%d')
-	todays_folder_path = dirpath + today + '/'
+	todays_folder_path = dirpath + '/' + today
 	print(todays_folder_path)
 	
 	if not os.path.exists(todays_folder_path):

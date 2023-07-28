@@ -6,17 +6,18 @@ def find_file(file_name, directory_path):
     for dirpath, dirnames, fnames in os.walk(directory_path):
         for filename in fnames:
             if filename == file_name:
-                return dirpath
+                return dirpath + '/' + file_name
 
-record_video_path = find_file('record_video.py', '/home/pi/')
+record_video_path = find_file('record_video.py', '/home/pi')
 
 cron = CronTab(user='pi')
-job1 = cron.new(command='sudo mount /dev/sda1 /mnt/bumblebox/')
+cron.remove_all()
+job1 = cron.new(command='sudo mount /dev/sda1 /mnt/bumblebox -o umask=000')
 job1.every_reboot()
 cron.write()
 
 
-job1 = cron.new(command='sudo chmod ugo+x /mnt/bumblebox/ --umask 000')
+job1 = cron.new(command='sudo chmod -R ugo+rwx /mnt/bumblebox')
 job1.every_reboot()
 cron.write()
 
@@ -26,7 +27,7 @@ cron.write()
 
 if setup.tag_tracking == True:
 
-    tag_tracking_path = find_file('ram_capture_tag_tracking.py', '/home/pi/')
+    tag_tracking_path = find_file('ram_capture_tag_tracking.py', '/home/pi')
 
 
     minutes_list = {
@@ -46,18 +47,19 @@ if setup.tag_tracking == True:
         "60" : [0]
     }
 
-    for key, val in minutes_list:
+    for key, val in minutes_list.items():
+     
         if str(setup.recording_frequency) == key:
-            recording_minutes = key[val]
+            recording_minutes = val
 
         if str(setup.tag_tracking_frequency) == key:
-            tag_tracking_minutes = key[val]
+            tag_tracking_minutes = val
 
     tag_tracking_without_recording_minutes = [ minute for minute in tag_tracking_minutes if minute not in recording_minutes]
 
 
     job3 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} -box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
-    job3.minute.on(0)
+    job3.minute.on(tag_tracking_without_recording_minutes[0])
     for minute in tag_tracking_without_recording_minutes[1:]:
         job3.minute.also.on(minute)
 

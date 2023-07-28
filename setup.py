@@ -38,7 +38,7 @@ quality = 95
 
 infrared_recording = True
 
-data_folder_path = '/mnt/bumblebox/data/'
+data_folder_path = '/mnt/bumblebox/data'
 
 '''This takes options 'Auto', 'HighQuality', 'Fast', or 'Off'. Would recommend using 'Auto' to start off - using HighQuality will impact the max framerate possible'''
 noise_reduction_mode = 'Auto' 
