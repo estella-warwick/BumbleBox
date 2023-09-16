@@ -1,3 +1,5 @@
+'''script that contains the video recording functions for BumbleBox - which is used is determined by the variables set in setup.py''' 
+
 #!/usr/bin/env python
 
 from picamera2 import Picamera2, Preview
@@ -96,6 +98,8 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 
 	out.release()
 	cv2.destroyAllWindows()
+	return output
+	
 
 
 
@@ -139,6 +143,7 @@ def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_
 	
 	picam2.stop()
 	picam2.stop_encoder()
+	return output
 	
 	
 def create_todays_folder(dirpath):
@@ -171,12 +176,113 @@ def create_todays_folder(dirpath):
 		return 0, todays_folder_path
 	
 
-
-
-
-
-
+#add my csv tracking alternative in for now, along with in the ram_capture script - this so I can add functions quickly 
+def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box_type):
 	
+	print(tag_dictionary)
+	if tag_dictionary is None:
+		tag_dictionary = '4X4_50'
+		if isinstance(tag_dictionary, str):
+			if 'DICT' not in tag_dictionary:
+				tag_dictionary = "DICT_%s" % tag_dictionary
+			tag_dictionary = tag_dictionary.upper()
+			if not hasattr(cv2.aruco, tag_dictionary):
+				raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
+			tag_dictionary = getattr(cv2.aruco, tag_dictionary)
+	else:
+		if 'DICT' not in tag_dictionary:
+			tag_dictionary = "DICT_%s" % tag_dictionary
+		tag_dictionary = tag_dictionary.upper()
+		if not hasattr(cv2.aruco, tag_dictionary):
+			raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
+		tag_dictionary = getattr(cv2.aruco, tag_dictionary)
+	aruco_dict = aruco.Dictionary_get(tag_dictionary) 
+	parameters = aruco.DetectorParameters_create()
+	
+	if box_type=='custom':
+		#change these!
+		parameters.minMarkerPerimeterRate=0.03
+		parameters.adaptiveThreshWinSizeMin=5
+		parameters.adaptiveThreshWinSizeStep=6
+		parameters.polygonalApproxAccuracyRate=0.06
+		
+	elif box_type=='koppert':
+		#change these!
+		parameters.minMarkerPerimeterRate=0.03
+		parameters.adaptiveThreshWinSizeMin=5
+		parameters.adaptiveThreshWinSizeStep=6
+		parameters.polygonalApproxAccuracyRate=0.06
+		
+	elif box_type==None:
+		#change these!
+		parameters.minMarkerPerimeterRate=0.03
+		parameters.adaptiveThreshWinSizeMin=5
+		parameters.adaptiveThreshWinSizeStep=6
+		parameters.polygonalApproxAccuracyRate=0.06
+
+
+	vid = cv2.VideoCapture(filepath)
+	
+	frame_num = 0
+	noID = []
+	raw = []
+	augs_csv = []
+	
+	start = time.time()
+	
+	while(vid.Isopened()):
+		
+		ret,frame = vid.read()
+		if ret == True:
+			try:
+				gray = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
+				clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+				cl1 = clahe.apply(gray)
+				gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
+				
+			except:
+				print('converting to grayscale didnt work...')
+				continue
+				
+			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
+
+			for i in range(len(rejectedImgPoints)):
+				c = rejectedImgPoints[i][0]
+				xmean = c[:,0].mean() #for calculating the centroid
+				ymean = c[:,1].mean() #for calculating the centroid
+				xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
+				ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
+				noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
+			
+			if ids is not None:
+				for i in range(len(ids)):
+					c = corners[i][0]
+					xmean = c[:,0].mean() #for calculating the centroid
+					ymean = c[:,1].mean() #for calculating the centroid
+					xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
+					ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
+					raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
+
+			frame_num += 1
+			print(f"processed frame {index}")  
+		
+		df = pandas.DataFrame(raw)
+		df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
+		df.to_csv(todays_folder_path + filename + '_raw.csv')
+		print('saved raw csv')
+		#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
+		df2 = pandas.DataFrame(noID)
+		df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
+		df2.to_csv(todays_folder_path + filename + '_noID.csv')
+		print('saved noID csv')
+		#df2.to_csv('/home/pi/Desktop/BumbleBox/testing/potential_csv.csv', index=False)
+
+		print("Average number of tags found: " + str(len(df.index)/frame_num))
+		tracking_time = time.time() - start
+		print(f"Tag tracking took {tracking_time} seconds, an average of {tracking_time / frame_num} seconds per frame") 
+		#return df, df2, frame_num
+
+
 def main():
 	
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
@@ -187,6 +293,9 @@ def main():
 	parser.add_argument('-sh', '--shutter', type=int, default=2500, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
 	parser.add_argument('-w', '--width', type=int, default=4056, help='the width of the image in pixels')
 	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
+	parser.add_argument('-d', '--dictionary', type=str, default=None, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
+	parser.add_argument('-b', '--box_type', type=str, default='custom', choices=['custom','koppert'], help='an option to choose a default set of tracking parameters for either the custom bumblebox or the koppert box adaptation')
+	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
 	parser.add_argument('-cd', '--codec', type=str, default='mp4', choices=['mp4','mjpeg'], help='choose to save either mp4 videos or mjpeg videos!')
 	parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
 	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
@@ -215,10 +324,12 @@ def main():
 	print(args.frames_per_second)
 	
 	if args.codec == 'mp4':
-		picam2_record_mp4(filename,todays_folder_path, args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
+		filepath = picam2_record_mp4(filename,todays_folder_path, args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	if args.codec == 'mjpeg':
-		picam2_record_mjpeg(filename,todays_folder_path, args.recording_time, args.quality, args.frames_per_second, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
+		filepath = picam2_record_mjpeg(filename,todays_folder_path, args.recording_time, args.quality, args.frames_per_second, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	
+	print('starting to track tags from the saved video!')
+	trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type)
 	
 if __name__ == '__main__':
 	

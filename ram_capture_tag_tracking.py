@@ -12,15 +12,11 @@ from datetime import date
 from datetime import datetime
 from sys import getsizeof
 from libcamera import controls
+import os
 
-
-# current progress as of 07/18/23
-# am going to use argparse to get the necessary values for the data capture in the main function (which should be coming from the crontab script - run command)
-# then am going to feed those into the array_capture function (not done yet)
-# then am going to track the tags from the frames_list object using the trackTagsfromRAM function
-# a nice thing would be to make the tracking parameters associated with the custom box and the koppert box toggle-able 
-
-#what about shutter speed?
+# to do - 
+# transfer tag tracking code to video recording so it happens after videos record as well
+# figure out how to fine tune frames per second
 
 def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file, noise_reduction_mode, digital_zoom):
 	
@@ -87,7 +83,7 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 		
 		
 def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, box_type):
-	
+	print(tag_dictionary)
 	if tag_dictionary is None:
 		tag_dictionary = '4X4_50'
 		if isinstance(tag_dictionary, str):
@@ -97,7 +93,13 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 			if not hasattr(cv2.aruco, tag_dictionary):
 				raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
 			tag_dictionary = getattr(cv2.aruco, tag_dictionary)
-            
+	else:
+		if 'DICT' not in tag_dictionary:
+			tag_dictionary = "DICT_%s" % tag_dictionary
+		tag_dictionary = tag_dictionary.upper()
+		if not hasattr(cv2.aruco, tag_dictionary):
+			raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
+		tag_dictionary = getattr(cv2.aruco, tag_dictionary)
 	aruco_dict = aruco.Dictionary_get(tag_dictionary) 
 	parameters = aruco.DetectorParameters_create()
 	
@@ -115,9 +117,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 		parameters.polygonalApproxAccuracyRate=0.06
 		
 	elif box_type==None:
-		#parameters.minMarkerPerimeterRate = os.environ(["minMarkerPerimeterRate"])
 		
-		#edit these to be passed into it from outer function?
 		parameters.minMarkerPerimeterRate=0.03
 		parameters.adaptiveThreshWinSizeMin=5
 		parameters.adaptiveThreshWinSizeStep=6
@@ -126,10 +126,12 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	frame_num = 0
 	noID = []
 	raw = []
+	augs_csv = []
 	
 	start = time.time()
 
-	for i, frame in enumerate(frames_list):
+	for index, frame in enumerate(frames_list):
+		print(index, frame_num)
 		frame = frame[0]
 		
 		try:
@@ -162,30 +164,31 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 				raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 		frame_num += 1
-		print(f"processed frame {i}")  
+		print(f"processed frame {index}")  
 	
 	df = pandas.DataFrame(raw)
-	df = pandas.DataFrame(raw)
 	df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	df.to_csv('./testing/identified_csv.csv', index=False)
-	df2 = pandas.DataFrame(noID)
+	df.to_csv(todays_folder_path + filename + '_raw.csv')
+	print('saved raw csv')
+	#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
 	df2 = pandas.DataFrame(noID)
 	df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	df2.to_csv('./testing/potential_csv.csv', index=False)
+	df2.to_csv(todays_folder_path + filename + '_noID.csv')
+	print('saved noID csv')
+	#df2.to_csv('/home/pi/Desktop/BumbleBox/testing/potential_csv.csv', index=False)
 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	tracking_time = time.time() - start
-	print(f"Tag tracking took {tracking_time} seconds") 
-	return df, df2, frame_num
+	print(f"Tag tracking took {tracking_time} seconds, an average of {tracking_time / frame_num} seconds per frame") 
+	#return df, df2, frame_num
 	
 	
-	'''
-	def create_todays_folder(dirpath):
-	
+
+def create_todays_folder(dirpath):
+
 	today = date.today()
-	today = today.strftime('%Y-%m-%d')
-	todays_folder_path = dirpath + today + '/'
-	print(todays_folder_path)
+	today = today.strftime('/%Y-%m-%d/')
+	todays_folder_path = dirpath + today
 	
 	if not os.path.exists(todays_folder_path):
 		
@@ -208,7 +211,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	
 	else:
 		return 0, todays_folder_path
-	'''
+
 	
 	
 def main():
@@ -239,7 +242,7 @@ def main():
 	now = datetime.now()
 	now = now.strftime('_%Y-%m-%d_%H_%M_%S')
 	
-	filename = hostname + now # + '.mjpeg'
+	filename = hostname + now
 	
 	print(filename)
 	print(args.data_folder_path)
@@ -249,10 +252,9 @@ def main():
 	
 	frames_list = array_capture(args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	
-	print(type(frames_list))
-	print(len(frames_list))
+	print('about to track tags!')
 	
-	trackTagsFromRAM(filename,todays_folder_path, frames_list, args.dictionary, args.box_type)
+	trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type)
 	
 	
 if __name__ == '__main__':

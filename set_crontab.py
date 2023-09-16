@@ -1,3 +1,6 @@
+'''set up the tag tracking/recording schedule based on the settings in the setup.py script'''
+
+
 import setup
 from crontab import CronTab
 import os
@@ -8,22 +11,27 @@ def find_file(file_name, directory_path):
             if filename == file_name:
                 return dirpath + '/' + file_name
 
+'''find the path to the record_video file on the computer'''
 record_video_path = find_file('record_video.py', '/home/pi')
 
+'''make sure the computer recognizes the thumb drive or storage device when the computer turns on, and name it bumblebox'''
 cron = CronTab(user='pi')
 cron.remove_all()
 job1 = cron.new(command='sudo mount /dev/sda1 /mnt/bumblebox -o umask=000')
 job1.every_reboot()
 cron.write()
 
-
+'''make sure that we can write to this storage drive and to folders that we create on it'''
 job1 = cron.new(command='sudo chmod -R ugo+rwx /mnt/bumblebox')
 job1.every_reboot()
 cron.write()
 
-job2 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
+'''schedule the record video script to run every X minutes based on the recording_frequency variable in setup.py'''
+job2 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} --box_type {setup.box_type} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
 job2.minute.every(setup.recording_frequency)
 cron.write()
+
+'''if tag tracking is set to true, have tag tracking take place at an interval set by the tag_tracking_frequency variable in setup.py - if video recording and tag tracking fall on the same minute, video recording will override the tag tracking, and a video will be saved'''
 
 if setup.tag_tracking == True:
 
@@ -58,7 +66,7 @@ if setup.tag_tracking == True:
     tag_tracking_without_recording_minutes = [ minute for minute in tag_tracking_minutes if minute not in recording_minutes]
 
 
-    job3 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} -box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
+    job3 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} --box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
     job3.minute.on(tag_tracking_without_recording_minutes[0])
     for minute in tag_tracking_without_recording_minutes[1:]:
         job3.minute.also.on(minute)
