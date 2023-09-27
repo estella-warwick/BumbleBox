@@ -1,13 +1,16 @@
 #!/usr/bin/env python
 
+#switch from using environment variables to pulling variables from setup.py
+#figure out how to both run from command line and using the variables set by setup.py
 from picamera2 import Picamera2, Preview
 import time
 import argparse
 import os
+import setup
 
-def rpi4_preview(preview_time, shutter_speed, width, height, tuning_file, preview_window):
+def rpi4_preview(preview_time, shutter_speed, width, height, preview_tuning_file, preview_window):
 	
-	tuning = Picamera2.load_tuning_file(tuning_file)
+	tuning = Picamera2.load_tuning_file(preview_tuning_file)
 	
 	picam2 = Picamera2(tuning=tuning)
 	picam2.set_controls({"ExposureTime": shutter_speed})
@@ -28,7 +31,7 @@ def rpi4_preview(preview_time, shutter_speed, width, height, tuning_file, previe
 		print("Fyi, QTGL is the default preview window, and the DRM preview window is usually meant for Raspberry Pi lite operating systems.\nI havent gotten it to work on the Raspberry Pi 4b... Here goes nothing!")
 		picam2.start_preview(Preview.DRM)
 		picam2.start()
-		
+		dsaff
 	time.sleep(preview_time)
 		
 	picam2.stop_preview()
@@ -38,21 +41,27 @@ def rpi4_preview(preview_time, shutter_speed, width, height, tuning_file, previe
 def main():
 	
 	try:
-		preview_time = os.environ["PREVIEW_TIME"]
+		#preview_time = os.environ["PREVIEW_TIME"]
+		preview_time = setup.preview_time
 		print(f'preview time: {preview_time} seconds')
-		shutter_speed = os.environ["SHUTTER_SPEED"]
+		#shutter_speed = os.environ["SHUTTER_SPEED"]
+		shutter_speed = setup.shutter_speed
 		print(f'shutter speed: {shutter_speed} microseconds ')
-		preview_width = os.environ["PREVIEW_WIDTH"]
+		#preview_width = os.environ["PREVIEW_WIDTH"]
+		preview_width = setup.preview_width
 		print(f'preview width: {preview_width} pixels')
-		preview_height = os.environ["PREVIEW_HEIGHT"]
+		#preview_height = os.environ["PREVIEW_HEIGHT"]
+		preview_height = setup.preview_height
 		print(f'preview height: {preview_height} pixels')
-		tuning_file = os.environ["TUNING_FILE"]
-		print(f'tuning file used: {tuning_file}')
+		#tuning_file = os.environ["TUNING_FILE"]
+		preview_tuning_file = setup.preview_tuning_file
+		print(f'tuning file used: {preview_tuning_file}')
 		print("if the name of the tuning file has \"noir\" in it, that means its calibrating for you having taken out the IR filter in the camera. So hopefully you did that, or else it might look funky!") 
-		preview_window = os.environ["PREVIEW_WINDOW"]
+		#preview_window = os.environ["PREVIEW_WINDOW"]
+		preview_window = setup.preview_window
 		print(f'preview window being used: {preview_window}')
 		
-		rpi4_preview(preview_time, shutter_speed, preview_width, preview_height, tuning_file, preview_window)
+		rpi4_preview(preview_time, shutter_speed, preview_width, preview_height, preview_tuning_file, preview_window)
 		
 	except KeyError:
 		
@@ -64,7 +73,7 @@ def main():
 			parser.add_argument('-sh', '--shutter', type=int, default=2500, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
 			parser.add_argument('-w', '--width', type=int, default=1352, help='the width of the preview image in pixels (you should be able to adjust the window size after it opens though')
 			parser.add_argument('-ht', '--height', type=int, default=1013, help='the height of the preview image in pixels')
-			parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
+			parser.add_argument('-tf', '--preview_tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
 			args = parser.parse_args()
 			
 			print("Yes it is!")

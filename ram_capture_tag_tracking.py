@@ -6,6 +6,7 @@ from cv2 import aruco
 import pandas
 import argparse
 from record_video import create_todays_folder
+from setup import colony_number
 import socket
 import time
 from datetime import date
@@ -82,7 +83,7 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 		
 		
 		
-def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, box_type):
+def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, box_type, now, hostname, colony_number):
 	print(tag_dictionary)
 	if tag_dictionary is None:
 		tag_dictionary = '4X4_50'
@@ -117,11 +118,11 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 		parameters.polygonalApproxAccuracyRate=0.06
 		
 	elif box_type==None:
-		
-		parameters.minMarkerPerimeterRate=0.03
-		parameters.adaptiveThreshWinSizeMin=5
-		parameters.adaptiveThreshWinSizeStep=6
-		parameters.polygonalApproxAccuracyRate=0.06
+		pass
+		#parameters.minMarkerPerimeterRate=0.03
+		#parameters.adaptiveThreshWinSizeMin=5
+		#parameters.adaptiveThreshWinSizeStep=6
+		#parameters.polygonalApproxAccuracyRate=0.06
 
 	frame_num = 0
 	noID = []
@@ -131,7 +132,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	start = time.time()
 
 	for index, frame in enumerate(frames_list):
-		print(index, frame_num)
+		
 		frame = frame[0]
 		
 		try:
@@ -143,8 +144,14 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 		except:
 			print('converting to grayscale didnt work...')
 			continue
-			
+		
 		corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
+		
+		#for troubleshooting
+		#frame_markers = aruco.drawDetectedMarkers(gray.copy(), corners, ids)
+		#resized = cv2.resize(frame_markers, (1352,1013), interpolation = cv2.INTER_AREA)
+		#cv2.imshow("frame",resized)
+		#cv2.waitKey(5000)
 
 		for i in range(len(rejectedImgPoints)):
 			c = rejectedImgPoints[i][0]
@@ -152,8 +159,9 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 			ymean = c[:,1].mean() #for calculating the centroid
 			xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 			ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-			noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
-		
+			#noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
+			noID.append( [filename, colony_number, now, frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
+			
 		if ids is not None:
 			for i in range(len(ids)):
 				c = corners[i][0]
@@ -161,21 +169,31 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 				ymean = c[:,1].mean() #for calculating the centroid
 				xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 				ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-				raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
-
+				#raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
+				raw.append( [filename, colony_number, now, frame_num, int(ids[i]), float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
 		frame_num += 1
 		print(f"processed frame {index}")  
 	
+	#df = pandas.DataFrame(raw)
+	#df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
+	#df.to_csv(todays_folder_path + filename + '_raw.csv')
+	#print('saved raw csv')
+	
 	df = pandas.DataFrame(raw)
-	df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	df.to_csv(todays_folder_path + filename + '_raw.csv')
+	df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
+	df.to_csv(todays_folder_path + filename + '_augraw.csv', index=False)
 	print('saved raw csv')
-	#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
+	
 	df2 = pandas.DataFrame(noID)
-	df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	df2.to_csv(todays_folder_path + filename + '_noID.csv')
+	df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
+	df2.to_csv(todays_folder_path + filename + '_augnoID.csv', index=False)
 	print('saved noID csv')
-	#df2.to_csv('/home/pi/Desktop/BumbleBox/testing/potential_csv.csv', index=False)
+	
+	#df2 = pandas.DataFrame(noID)
+	#df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
+	#df2.to_csv(todays_folder_path + filename + '_noID.csv')
+	#print('saved noID csv')
+	
 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	tracking_time = time.time() - start
@@ -219,8 +237,8 @@ def main():
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
 	parser.add_argument('-p', '--data_folder_path', type=str, default='/mnt/bumblebox/data/', help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
 	parser.add_argument('-t', '--recording_time', type=int, default=5, help='the video recording time in seconds')
-	parser.add_argument('-fps', '--frames_per_second', type=int, default=10, choices=range(0,10), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
-	parser.add_argument('-sh', '--shutter', type=int, default=2500, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
+	parser.add_argument('-fps', '--frames_per_second', type=int, default=10, choices=range(0,11), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
+	parser.add_argument('-sh', '--shutter', type=int, default=100000, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
 	parser.add_argument('-w', '--width', type=int, default=4056, help='the width of the image in pixels')
 	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
 	parser.add_argument('-d', '--dictionary', type=str, default=None, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
@@ -240,9 +258,9 @@ def main():
 	hostname = socket.gethostname()
 	
 	now = datetime.now()
-	now = now.strftime('_%Y-%m-%d_%H_%M_%S')
+	now = now.strftime('%Y-%m-%d_%H-%M-%S')
 	
-	filename = hostname + now
+	filename = hostname + '_' + now
 	
 	print(filename)
 	print(args.data_folder_path)
@@ -254,7 +272,7 @@ def main():
 	
 	print('about to track tags!')
 	
-	trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type)
+	trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
 	
 	
 if __name__ == '__main__':
