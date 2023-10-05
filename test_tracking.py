@@ -3,7 +3,7 @@ from cv2 import aruco
 import setup
 from picamera2 import Picamera2
 import time
-
+#edit code to add in rejected image points
 def test_tracking(preview_time, width, height, tag_dictionary, box_type, shutter_speed, digital_zoom, tuning_file):
 	if tag_dictionary is None:
 		tag_dictionary = '4X4_50'

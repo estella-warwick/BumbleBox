@@ -13,6 +13,7 @@ import os
 import subprocess
 from sys import getsizeof
 import cv2
+from cv2 import aruco
 from libcamera import controls
 
 
@@ -59,6 +60,7 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	print(f"	image width: {width}")
 	print(f"	image width: {height}")
 	print(f"	output image format: RGB888")
+	print(f"    output video format: mp4")
 
 	time.sleep(2)
 	start_time = time.time()
@@ -72,7 +74,6 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 		timestamp = time.time() - start_time
 		
 		yuv420 = picam2.capture_array()
-		print(yuv420.shape)
 		frames_list.append([yuv420])
 		#yuv420 = yuv420[0:3040, :]
 		#frames_dict[f"frame_{i:03d}"] = [yuv420, timestamp]
@@ -87,7 +88,7 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	output = outdir+'/'+filename+'.mp4'
 	vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 	out = cv2.VideoWriter(output,vid_fourcc,10,(4032,3040))
-	print("got here!")
+	
 	for i, im_array in enumerate(frames_list):
 		frame = im_array[0]
 		#gray_im = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
@@ -119,6 +120,7 @@ def picam2_record_mjpeg(filename, outdir, recording_time, quality, fps, shutter_
 	print(f"	image width: {width}")
 	print(f"	image width: {height}")
 	print(f"	image format: {imformat}")
+	print(f"    output video format: mjpeg")
 	print(f"	buffer count: {buffer_count}")
 		    
 		    
@@ -295,7 +297,6 @@ def main():
 	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
 	parser.add_argument('-d', '--dictionary', type=str, default=None, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
 	parser.add_argument('-b', '--box_type', type=str, default='custom', choices=['custom','koppert'], help='an option to choose a default set of tracking parameters for either the custom bumblebox or the koppert box adaptation')
-	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
 	parser.add_argument('-cd', '--codec', type=str, default='mp4', choices=['mp4','mjpeg'], help='choose to save either mp4 videos or mjpeg videos!')
 	parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
 	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')

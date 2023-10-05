@@ -13,7 +13,7 @@ colony_number = '01'
 tag_tracking = True
 
 '''only happens if tag_tracking is set to True! Record tag locations every x minutes for the given recording_time duration'''
-tag_tracking_frequency = 2
+tag_tracking_frequency = 5
 
 '''in pixels (4056 is the max width for the HQ camera'''
 width = 4056
@@ -28,7 +28,7 @@ recording_time = 20
 recording_frequency = 30
 
 '''in microseconds'''
-shutter_speed = 100000
+shutter_speed = 2500
 
 '''in seconds'''
 frames_per_second = 6
@@ -74,7 +74,7 @@ preview_width = 3000 #pixels (these should match your camera's aspect ratio - th
 preview_height = 2250 #pixels
 infrared_preview = True #if set to true, uses an algorithm for the HQ camera sensor that favors infrared lighting
 preview_window = 'QTGL' #either 'QTGL', 'QT', or for lite operating systems 'DRM'
-preview_digital_zoom = None
+preview_digital_zoom = (200,0,3000,3040)
 
 if infrared_preview == True:
 	preview_tuning_file = 'imx477_noir.json' # algorithm that runs based on the camera type (this automatically turns on 
