@@ -14,6 +14,7 @@ from datetime import datetime
 from sys import getsizeof
 from libcamera import controls
 import os
+import behavioral_metrics
 
 # to do - 
 # transfer tag tracking code to video recording so it happens after videos record as well
@@ -198,7 +199,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	tracking_time = time.time() - start
 	print(f"Tag tracking took {tracking_time} seconds, an average of {tracking_time / frame_num} seconds per frame") 
-	#return df, df2, frame_num
+	return df, df2, frame_num
 	
 	
 
@@ -272,8 +273,11 @@ def main():
 	
 	print('about to track tags!')
 	
-	trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
-	
+	df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
+	df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
+	df = compute_social_center_distance(df)
+	video_averages = compute_average_distance_and_speed_per_video(df)
+	store_cumulative_averages(video_averages)
 	
 if __name__ == '__main__':
 	
