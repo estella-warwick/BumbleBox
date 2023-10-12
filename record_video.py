@@ -15,6 +15,8 @@ from sys import getsizeof
 import cv2
 from cv2 import aruco
 from libcamera import controls
+import behavioral_metrics
+from setup import colony_number
 
 
 
@@ -254,7 +256,8 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 				ymean = c[:,1].mean() #for calculating the centroid
 				xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 				ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-				noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
+				noID.append( [filename, colony_number, now, frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
+				#noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 			
 			if ids is not None:
 				for i in range(len(ids)):
@@ -263,18 +266,19 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 					ymean = c[:,1].mean() #for calculating the centroid
 					xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 					ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-					raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
+					raw.append( [filename, colony_number, now, frame_num, int(ids[i]), float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
+					#raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 			frame_num += 1
 			print(f"processed frame {index}")  
 		
 		df = pandas.DataFrame(raw)
-		df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-		df.to_csv(todays_folder_path + filename + '_raw.csv')
+		df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
+		df.to_csv(todays_folder_path + filename + '_augraw.csv')
 		print('saved raw csv')
 		#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
 		df2 = pandas.DataFrame(noID)
-		df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
+		df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
 		df2.to_csv(todays_folder_path + filename + '_noID.csv')
 		print('saved noID csv')
 		#df2.to_csv('/home/pi/Desktop/BumbleBox/testing/potential_csv.csv', index=False)
@@ -282,7 +286,7 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 		print("Average number of tags found: " + str(len(df.index)/frame_num))
 		tracking_time = time.time() - start
 		print(f"Tag tracking took {tracking_time} seconds, an average of {tracking_time / frame_num} seconds per frame") 
-		#return df, df2, frame_num
+		return df, df2, frame_num
 
 
 def main():
@@ -330,7 +334,11 @@ def main():
 		filepath = picam2_record_mjpeg(filename,todays_folder_path, args.recording_time, args.quality, args.frames_per_second, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	
 	print('starting to track tags from the saved video!')
-	trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type)
+	df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now, hostname, colony_number)
+	df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
+	df = compute_social_center_distance(df)
+	video_averages = compute_average_distance_and_speed_per_video(df)
+	store_cumulative_averages(video_averages)
 	
 if __name__ == '__main__':
 	

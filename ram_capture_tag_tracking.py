@@ -3,7 +3,7 @@
 from picamera2 import Picamera2, Preview
 import cv2
 from cv2 import aruco
-import pandas
+import pandas as pd
 import argparse
 from record_video import create_todays_folder
 from setup import colony_number
@@ -11,10 +11,12 @@ import socket
 import time
 from datetime import date
 from datetime import datetime
+import sys
 from sys import getsizeof
 from libcamera import controls
 import os
 import behavioral_metrics
+import setup
 
 # to do - 
 # transfer tag tracking code to video recording so it happens after videos record as well
@@ -52,10 +54,11 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 	
 	print("Initializing data capture...")
 	print("Recording parameters:\n")
-	print(f"	recording time: {recording_time}s")
-	print(f"	frames per second: {fps}")
-	print(f"	image width: {width}")
-	print(f"	image width: {height}")
+	print(f"recording time: {recording_time}s")
+	print(f"frames per second: {fps}")
+	print(f"image width: {width} pixels")
+	print(f"image width: {height} pixels")
+	print(f"shutter speed: {shutter_speed} microseconds")
 	
 	start_time = time.time()
 	
@@ -65,7 +68,7 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 	while ( (time.time() - start_time) < recording_time):
 		
 		timestamp = time.time() - start_time
-		print(f'frame {i} timestamp: {timestamp} seconds')
+		print(f'frame {i} timestamp: {round(timestamp,2)} seconds')
 		yuv420 = picam2.capture_array()
 		frames_list.append([yuv420])
 		#yuv420 = yuv420[0:3040, :]
@@ -74,9 +77,9 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 		i += 1
 	
 	finished = time.time()-start_time
-	print(f'finished capturing frames to arrays, captured {i} frames in {finished} seconds')
+	print(f'finished capturing frames to arrays, captured {i} frames in {round(finished,2)} seconds')
 	rate = i / finished
-	print(f'thats {rate} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
+	print(f'thats {round(rate,2)} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
 	sizeof = getsizeof(frames_list)
 	print(f"Size of list storing the frames: {sizeof} bytes")
 	
@@ -180,12 +183,12 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	#df.to_csv(todays_folder_path + filename + '_raw.csv')
 	#print('saved raw csv')
 	
-	df = pandas.DataFrame(raw)
+	df = pd.DataFrame(raw)
 	df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
 	df.to_csv(todays_folder_path + filename + '_augraw.csv', index=False)
 	print('saved raw csv')
 	
-	df2 = pandas.DataFrame(noID)
+	df2 = pd.DataFrame(noID)
 	df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
 	df2.to_csv(todays_folder_path + filename + '_augnoID.csv', index=False)
 	print('saved noID csv')
@@ -235,20 +238,48 @@ def create_todays_folder(dirpath):
 	
 def main():
 	
+	#check whether this script is being run via cron or in terminal/via Geany or some other text editor
+	if sys.stdout.isatty():
+		print("running in a real terminal")
+	else:
+		print("Nope this is being piped or redirected")
+		
+		#print(f"filename: {filename}")
+		#print(f"data folder path {setup.data_folder_path}")
+		#print(f"data stored in this folder today: {todays_folder_path}")
+		#print(f"recording time: {setup.recording_time}"
+		#print(f"frames per second: {setup.frames_per_second}"
+		
+		#frames_list = array_capture(setup.recording_time, setup.frames_per_second, setup.shutter, setup.width, setup.height, setup.tuning_file, setup.noise_reduction, setup.digital_zoom)
+
+		#print('about to track tags!')
+	
+		#df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, setup.tag_dictionary, setup.box_type, now, hostname, colony_number)
+		#print(df.head)
+		#df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
+		#df = compute_social_center_distance(df)
+		#video_averages = compute_average_distance_and_speed_per_video(df)
+		#store_cumulative_averages(video_averages)
+	
+	
+		
+		# this assumes that user will run these scripts through a text editor rather than typing them into terminal
+		# and assumes that the script arguments below will only be invoked by cron
+		
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
-	parser.add_argument('-p', '--data_folder_path', type=str, default='/mnt/bumblebox/data/', help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
-	parser.add_argument('-t', '--recording_time', type=int, default=5, help='the video recording time in seconds')
-	parser.add_argument('-fps', '--frames_per_second', type=int, default=10, choices=range(0,11), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
-	parser.add_argument('-sh', '--shutter', type=int, default=100000, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
-	parser.add_argument('-w', '--width', type=int, default=4056, help='the width of the image in pixels')
-	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
-	parser.add_argument('-d', '--dictionary', type=str, default=None, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
-	parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
-	parser.add_argument('-b', '--box_type', type=str, default='custom', choices=['custom','koppert'], help='an option to choose a default set of tracking parameters for either the custom bumblebox or the koppert box adaptation')
-	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
-	parser.add_argument('-z', '--digital_zoom', type=tuple, default=None, help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
+	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
+	parser.add_argument('-t', '--recording_time', type=int, default=setup.recording_time, help='the video recording time in seconds')
+	parser.add_argument('-fps', '--frames_per_second', type=int, default=setup.frames_per_second, choices=range(0,11), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
+	parser.add_argument('-sh', '--shutter', type=int, default=setup.shutter_speed, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
+	parser.add_argument('-w', '--width', type=int, default=setup.width, help='the width of the image in pixels')
+	parser.add_argument('-ht', '--height', type=int, default=setup.height, help='the height of the image in pixels')
+	parser.add_argument('-d', '--dictionary', type=str, default=setup.tag_dictionary, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
+	parser.add_argument('-tf', '--tuning_file', type=str, default=setup.tuning_file, help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
+	parser.add_argument('-b', '--box_type', type=str, default=setup.box_type, choices=['custom','koppert'], help='an option to choose a default set of tracking parameters for either the custom bumblebox or the koppert box adaptation')
+	parser.add_argument('-nr', '--noise_reduction', type=str, default=setup.noise_reduction_mode, choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
+	parser.add_argument('-z', '--digital_zoom', type=tuple, default=setup.recording_digital_zoom, help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
 	args = parser.parse_args()
-    
+	
 	ret, todays_folder_path = create_todays_folder(args.data_folder_path)
 	
 	if ret == 1:
@@ -262,22 +293,22 @@ def main():
 	now = now.strftime('%Y-%m-%d_%H-%M-%S')
 	
 	filename = hostname + '_' + now
-	
+
 	print(filename)
 	print(args.data_folder_path)
 	print(todays_folder_path)
 	print(args.recording_time)
 	print(args.frames_per_second)
-	
+
 	frames_list = array_capture(args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
-	
+
 	print('about to track tags!')
-	
+
 	df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
 	df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
-	df = compute_social_center_distance(df)
-	video_averages = compute_average_distance_and_speed_per_video(df)
-	store_cumulative_averages(video_averages)
+	df = behavioral_metrics.compute_social_center_distance(df)
+	video_averages = behavioral_metrics.compute_average_distance_and_speed_per_video(df, filename)
+	behavioral_metrics.store_cumulative_averages(filename)
 	
 if __name__ == '__main__':
 	

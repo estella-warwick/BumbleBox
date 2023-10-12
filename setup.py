@@ -21,8 +21,8 @@ width = 4056
 '''in pixels (3040 is the max height for HQ camera)'''
 height = 3040
 
-'''in seconds'''
-recording_time = 20
+'''in seconds, used whether tag_tracking is True or False'''
+recording_time = 5
 
 '''make a recording every X minutes'''
 recording_frequency = 30
@@ -31,7 +31,7 @@ recording_frequency = 30
 shutter_speed = 2500
 
 '''in seconds'''
-frames_per_second = 6
+frames_per_second = 1
 
 ''' the options are 'mp4' or 'mjpeg' '''
 codec = 'mp4'
