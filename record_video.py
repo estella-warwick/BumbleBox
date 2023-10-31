@@ -17,12 +17,11 @@ from cv2 import aruco
 from libcamera import controls
 import behavioral_metrics
 from setup import colony_number
+import logging
 
-
-
-
-
-
+logging.basicConfig(filename=f'{setup.bumblebox_dir}/logs/record_video.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, width, height, tuning_file, noise_reduction_mode, digital_zoom): #imformat="yuv" #have excluded imformat input because right now only functions by grabbing YUV frames, then converts them to RGB video. Maybe have a grayscale vs color option if possible?
 	
@@ -291,34 +290,35 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 
 def main():
 	
+	if sys.stdout.isatty():
+		print("running in a real terminal")
+	else:
+		print("Nope this is being piped or redirected")
+	
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
-	parser.add_argument('-p', '--data_folder_path', type=str, default='/mnt/bumblebox/data/', help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
-	parser.add_argument('-t', '--recording_time', type=int, default=20, help='the video recording time in seconds')
-	parser.add_argument('-q', '--quality', type=int, default=95, choices=range(0,100), help='jpg image quality setting from 0-100. The higher the number, the better quality, and the bigger the file.')
-	parser.add_argument('-fps', '--frames_per_second', type=int, default=6, choices=range(0,10), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
-	parser.add_argument('-sh', '--shutter', type=int, default=2500, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
-	parser.add_argument('-w', '--width', type=int, default=4056, help='the width of the image in pixels')
-	parser.add_argument('-ht', '--height', type=int, default=3040, help='the height of the image in pixels')
-	parser.add_argument('-d', '--dictionary', type=str, default=None, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
-	parser.add_argument('-b', '--box_type', type=str, default='custom', choices=['custom','koppert'], help='an option to choose a default set of tracking parameters for either the custom bumblebox or the koppert box adaptation')
-	parser.add_argument('-cd', '--codec', type=str, default='mp4', choices=['mp4','mjpeg'], help='choose to save either mp4 videos or mjpeg videos!')
-	parser.add_argument('-tf', '--tuning_file', type=str, default='imx477_noir.json', help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
-	parser.add_argument('-nr', '--noise_reduction', type=str, default='Auto', choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
-	parser.add_argument('-z', '--digital_zoom', type=tuple, default=None, help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
+	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
+	parser.add_argument('-t', '--recording_time', type=int, default=setup.recording_time, help='the video recording time in seconds')
+	parser.add_argument('-q', '--quality', type=int, default=setup.quality, choices=range(0,100), help='jpg image quality setting from 0-100. The higher the number, the better quality, and the bigger the file.')
+	parser.add_argument('-fps', '--frames_per_second', type=int, default=setup.frames_per_second, choices=range(0,10), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
+	parser.add_argument('-sh', '--shutter', type=int, default=setup.shutter_speed, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
+	parser.add_argument('-w', '--width', type=int, default=setup.width, help='the width of the image in pixels')
+	parser.add_argument('-ht', '--height', type=int, default=setup.height, help='the height of the image in pixels')
+	parser.add_argument('-d', '--dictionary', type=str, default=setup.tag_dictionary, help='type "aruco.DICT_" followed by the size of the tag youre using (either 4X4 (this is the default), 5X5, 6X6, or 7X7) and the number of tags in the dictionary (either 50 (also the default), 100, 250, or 1000).')
+	parser.add_argument('-b', '--box_type', type=str, default=setup.box_type, choices=['custom','koppert'], help='an option to choose a default set of tracking parameters for either the custom bumblebox or the koppert box adaptation')
+	parser.add_argument('-cd', '--codec', type=str, default=setup.codec, choices=['mp4','mjpeg'], help='choose to save either mp4 videos or mjpeg videos!')
+	parser.add_argument('-tf', '--tuning_file', type=str, default=setup.tuning_file, help='this is a file that helps improve image quality by running algorithms tailored to particular camera sensors.\nBecause the BumbleBox by default images in IR, we use the \'imx477_noir.json\' file by default')
+	parser.add_argument('-nr', '--noise_reduction', type=str, default=setup.noise_reduction_mode, choices=['Auto', 'Off', 'Fast', 'HighQuality'], help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
+	parser.add_argument('-z', '--digital_zoom', type=tuple, default=setup.recording_digital_zoom, help='an option to "digitally zoom in" by just recording from a portion of the sensor. This overrides height and width values, and can be useful to crop out glare that is negatively impacting image quality. Takes 4 values inside parentheses, separated by commas: 1: number of pixels to offset from the left side of the image 2: number of pixels to offset from the top of the image 3: width of the new cropped frame in pixels 4: height of the new cropped frame in pixels')
 	args = parser.parse_args()
     
 	ret, todays_folder_path = create_todays_folder(args.data_folder_path)
-	
 	if ret == 1:
-	
 		print("Couldn't create todays folder to store data in. Exiting program. Sad!")
 		return 1
 		
 	hostname = socket.gethostname()
-	
 	now = datetime.now()
 	now = now.strftime('_%Y-%m-%d_%H_%M_%S')
-	
 	filename = hostname + now
 	
 	print(filename)
@@ -335,10 +335,42 @@ def main():
 	
 	print('starting to track tags from the saved video!')
 	df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now, hostname, colony_number)
-	df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
-	df = compute_social_center_distance(df)
-	video_averages = compute_average_distance_and_speed_per_video(df)
-	store_cumulative_averages(video_averages)
+	
+	if df.empty == False and setup.calculate_behavior_metrics == True:
+		
+		if "speed" in setup.behavior_metrics:
+			try:
+				df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
+				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+				print('just computed speed')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+				
+		if "distance from center" in setup.behavior_metrics:
+			try:
+				df = behavioral_metrics.compute_social_center_distance(df)
+				#should writing to disk be inside or outside function?
+				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+				print('just computed distance from center')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+		
+		if "video averages" in setup.behavior_metrics:
+			try:	
+				video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
+				print('just computed video averages!')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+		
+		if "cumulative averages" in setup.behavior_metrics:
+			try:
+				running_averages = behavioral_metrics.store_cumulative_averages(filename)
+				print('just computed running averages!')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+		
+			if running_averages.empty == True:
+				logger.warning("cumulative averages dataframe returned empty")
 	
 if __name__ == '__main__':
 	

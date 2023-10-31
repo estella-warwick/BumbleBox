@@ -27,7 +27,7 @@ job1.every_reboot()
 cron.write()
 
 '''schedule the record video script to run every X minutes based on the recording_frequency variable in setup.py'''
-job2 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} --box_type {setup.box_type} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
+job2 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} --box_type {setup.box_type} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/pi/Desktop/output.txt 2>&1')
 job2.minute.every(setup.recording_frequency)
 cron.write()
 
@@ -66,7 +66,7 @@ if setup.tag_tracking == True:
     tag_tracking_without_recording_minutes = [ minute for minute in tag_tracking_minutes if minute not in recording_minutes]
 
 
-    job3 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} --box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom}')
+    job3 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} -afps {setup.actual_frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} --box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/pi/Desktop/output.txt 2>&1')
     job3.minute.on(tag_tracking_without_recording_minutes[0])
     for minute in tag_tracking_without_recording_minutes[1:]:
         job3.minute.also.on(minute)

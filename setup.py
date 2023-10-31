@@ -33,6 +33,8 @@ shutter_speed = 2500
 '''in seconds'''
 frames_per_second = 1
 
+actual_frames_per_second = 2.5
+
 ''' the options are 'mp4' or 'mjpeg' '''
 codec = 'mp4'
 
@@ -62,7 +64,8 @@ tag_dictionary = '4X4_50'
 '''the options are None, 'custom', or 'koppert' - set this to either custom or koppert to access preset tracking settings for'''
 box_type = 'custom'
 
-#parameters
+calculate_behavior_metrics = True
+behavior_metrics = ['speed','distance from center', 'video averages']
 
 
 
@@ -74,7 +77,7 @@ preview_width = 3000 #pixels (these should match your camera's aspect ratio - th
 preview_height = 2250 #pixels
 infrared_preview = True #if set to true, uses an algorithm for the HQ camera sensor that favors infrared lighting
 preview_window = 'QTGL' #either 'QTGL', 'QT', or for lite operating systems 'DRM'
-preview_digital_zoom = (200,0,3000,3040)
+preview_digital_zoom = (275,0,3300,3040)
 
 if infrared_preview == True:
 	preview_tuning_file = 'imx477_noir.json' # algorithm that runs based on the camera type (this automatically turns on 

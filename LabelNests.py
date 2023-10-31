@@ -20,7 +20,7 @@ import skvideo.io
 from PIL import Image as pil_im
 import tkinter as tk
 from tkinter import filedialog
-
+import setup
 
 def count_frames(video):
     #Finds # of frames in a video - this will allow us to store the vids data for each frame in order to compress them into a single picture!
@@ -38,8 +38,22 @@ def count_frames(video):
 
 def convert2numpy(video):
     video_array = skvideo.io.vread(video)
-    video_array = skvideo.io.vreader(video)
-    return video_array
+    print(video_array.shape)
+    f,h,w,d = video_array.shape
+    new_array = np.empty([f,h,w])
+    for i in range(0,f):    #f:video_array[i,:,:,:]:#np.ndindex(video_array.shape[0]):
+        frame = video_array[i,:,:,:]
+        print(frame.shape)
+        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+        gray = np.float32(gray)
+        new_array[i,:,:] = gray
+    print(new_array.shape)
+    #print(type(video_array))
+    #video_array = skvideo.io.vreader(video)
+    #print('video array type')
+    #print(type(video_array))
+    #return video_array
+    return new_array
 
     
     #Converts each frame of a video into a matrix of number which correspond to the frame's pixel values
@@ -71,7 +85,7 @@ def convert2numpy(video):
     #return buf
     
 
-def vids2medianimg(dir):
+def vids2medianimg(directory):
     #take in a list of videos of the same shape (except for frame number) 
     #Could be one, could be multiple, concatenates them
 
@@ -87,7 +101,7 @@ def vids2medianimg(dir):
 
     def on_button_click():
         filenames = filedialog.askopenfilenames()
-        with open("LabelNests_filepaths.txt", "w") as file:
+        with open(f"{setup.bumblebox_dir}/LabelNests_filepaths.txt", "w") as file:
             for path in filenames:
                 file.write(path + "\n")
         return filenames
@@ -116,7 +130,7 @@ def vids2medianimg(dir):
     #print('here are the paths: ' + bee_video_file_paths)
     win.mainloop()
 
-    f = open("LabelNests_filepaths.txt", "r")
+    f = open(f"{setup.bumblebox_dir}/LabelNests_filepaths.txt", "r")
     filenames = f.read()
     filenames = filenames.split(sep='\n')
     filenames = [i for i in filenames if i != '']
@@ -126,7 +140,7 @@ def vids2medianimg(dir):
     for video in filenames: #loops over each video selected
         if video in filenames_copy: #file_paths_copy starts as an exact copy, but videos will be removed from it as once theyre processed
             print(video)
-            col_num = os.path.basename(video)[0:6] #saves the first part of each video name: col_xx
+            col_num = os.path.basename(video)[0:12] #saves the first part of each video name: col_xx CHANGE THIS TO NOT BE HARDCODED
             print(col_num)
             same_colony_vids = [ i for i in filenames if col_num in i ] #searches for every item with the substring equal to col_num
             print(same_colony_vids)
@@ -136,13 +150,17 @@ def vids2medianimg(dir):
                 vid2array.append(buf) #add this array to the list vid2array, created above
             joined = np.vstack(vid2array) #outside of the for loop now, smush together all the videos in vid2array
             print(joined.shape)
+            print(joined)
             buffer_list.append([col_num, joined]) #append this smushed video to buffer_list
             filenames_copy = [ i for i in filenames_copy if i not in same_colony_vids ] #rewrites file_paths_copy to exclude the videos in same_colony_vids, so that these videos wont be looped through again   
 
     #this calculates the median image from the video(s)
     print('Calculating the median value of each pixel! Bear with me, this takes a while, especially when using multiple videos.')
     for col_vids in buffer_list:
-
+        #print(type(col_vids))
+        #print(col_vids[1].shape)
+        #print(col_vids.shape)
+        
         median_im = np.median(col_vids[1], axis=0)
         #convert numpy matrix into image type using PIL Image, making sure data type is uint8 and color format is RGB
         print('Converting the median numpy matrix back into an image!')
@@ -153,12 +171,12 @@ def vids2medianimg(dir):
         #will save the image as the name of the last video file
         #Ok, instead of saving the picture in this script, how about we save it in the script that will run this script, so that the same script can access the name of the file 
     
-        img_path = (dir + '/Nest Images/' + col_vids[0] + '_nest_image.png') #os.path.basename(video)[0:6].strip(extension) + '.png')
+        img_path = (directory + '/' + col_vids[0] + '_nest_image.png') #os.path.basename(video)[0:6].strip(extension) + '.png')
         median_im_v2.save(img_path)
         print(img_path + ' is saved!')
-    return print('Done creating colony nest images! Check for them in ' + dir + '/Nest Images/')
+    return print('Done creating colony nest images! Check for them in ' + directory )
 
-def labelNest(dir):
+def labelNest(directory):
     #with this code, have set up my own labelmerc file in the BumbleBox folder with config settings.
     #also went in and changed the __init__ file in the config folder, hashing out this code: (in order to have labels with repeating words)
     #if key == "labels" and value is not None and len(value) != len(set(value)):
@@ -167,16 +185,16 @@ def labelNest(dir):
     #    )
     
     print('Running Labelme now... I have preloaded the labels to use for these images. Of course, you dont need to use labels that dont apply to your circumstances. Use the designated shapes for each label that is provided. For example, in order to draw the perimeter of the nest, Ill use the polygon tool, because the label says Nest perimeter (polygon). Right click to choose what types of shapes you want to use!')
-    print(dir)
-    print(type(dir))
-    subprocess.run(['labelme', dir, '--config', dir + 'labelmerc', '--output', dir + 'Labelled Nest Files' ])
+    print(directory)
+    print(type(directory))
+    subprocess.run(['labelme', setup.bumblebox_dir, '--config', setup.bumblebox_dir + 'labelmerc', '--output', directory + '/Labelled Nest Files' ])
     #subprocess.run(['labelme', dir, '--labels', 'Arena perimeter (polygon),Nest perimeter (polygon),Eggs perimeter (polygons),Eggs (points),Larvae (circles),Pupae (circles),Queen larva (circles),Queen pupae,Wax pots (circles),full nectar pot (circles),empty wax pots (circles),pollen balls (circles), nectar source (circle)'])
 
     #subprocess.run(['labelme', dir, '--labels', 'nest perimeter,eggs (perimeter),eggs (circles),larvae,pupae,queen cell,wax pot,full nectar pot,empty wax pot,pollen ball, nectar source',
     #                '--shapes', 'polygon,polygon,points,cirlce,circle,circle,circle,circle,circle,circle,circle,circle', '--colors', 'yellow,orange,red,green,blue,purple,turquoise,magenta,pink'
     #                ]) #edit this line to add colours
     print('huh... is this on?')
-    jsons = sorted(glob.glob(os.path.join(dir + 'Labelled Nest Files', '*.json')))
+    jsons = sorted(glob.glob(os.path.join(directory + '/Labelled Nest Files', '*.json')))
     if len(jsons) < 1:
         print('''Looks like you didn't save your work into a .json file inside Labelme, or you didnt save it to the Labelled Nest Files.\n''')
     for file in jsons: #to do: check whether a CSV already exists? Or just overwrite the old one, depending on how long it takes?
@@ -215,8 +233,14 @@ def labelNest(dir):
 "------------------------------------------------------"
 
 def main(argv):
-    #vids2medianimg(dir)
-    labelNest(argv[1]) #labelNest(argv[1] + "/Nest Images")
+    
+    if not os.path.exists(setup.data_folder_path + '/Nest Images/Labelled Nest Files'):
+        os.makedirs(setup.data_folder_path + '/Nest Images/Labelled Nest Files')
+    directory = setup.data_folder_path + '/Nest Images'
+    
+    
+    vids2medianimg(directory)
+    labelNest(directory)
 
 
 if __name__ == "__main__": 

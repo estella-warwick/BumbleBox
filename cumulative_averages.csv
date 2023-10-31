@@ -1,1 +1,10 @@
-ID,average distance from center, average speed, total tracked frames
+filename,ID,average distance from center,average speed,total tracked frames
+bumblebox-01_2023-10-13_18-27-01,1,572.2,8.1,82
+bumblebox-01_2023-10-13_18-27-01,2,514.0,69.0,7
+bumblebox-01_2023-10-13_18-27-01,3,450.0,,2
+bumblebox-01_2023-10-13_18-27-01,4,696.89,202.14,64
+bumblebox-01_2023-10-13_18-27-01,6,773.0,109.33,54
+bumblebox-01_2023-10-13_18-27-01,7,376.6,19.25,26
+bumblebox-01_2023-10-13_18-27-01,12,445.5,18.0,27
+bumblebox-01_2023-10-13_18-27-01,13,628.38,17.75,69
+bumblebox-01_2023-10-13_18-27-01,14,243.4,17.25,32

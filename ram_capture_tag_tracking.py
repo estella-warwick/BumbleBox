@@ -17,6 +17,12 @@ from libcamera import controls
 import os
 import behavioral_metrics
 import setup
+import logging
+
+
+logging.basicConfig(filename=f'{setup.bumblebox_dir}/logs/ram_capture_tag_tracking.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 # to do - 
 # transfer tag tracking code to video recording so it happens after videos record as well
@@ -139,6 +145,16 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 		
 		frame = frame[0]
 		
+		if index == int(len(frames_list) / 2 ):
+			#logging.debug(f"{todays_folder_path}{filename}.png'")
+			print(f"{todays_folder_path}{filename}.png'")
+			frame_to_write = frame.copy()
+			gray = cv2.cvtColor(frame_to_write, cv2.COLOR_YUV2GRAY_I420)
+			clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+			cl1 = clahe.apply(gray)
+			gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
+			cv2.imwrite(todays_folder_path + filename + '.png', frame)
+		
 		try:
 			gray = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
 			clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
@@ -183,25 +199,34 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	#df.to_csv(todays_folder_path + filename + '_raw.csv')
 	#print('saved raw csv')
 	
-	df = pd.DataFrame(raw)
-	df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-	df.to_csv(todays_folder_path + filename + '_augraw.csv', index=False)
-	print('saved raw csv')
-	
-	df2 = pd.DataFrame(noID)
-	df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-	df2.to_csv(todays_folder_path + filename + '_augnoID.csv', index=False)
-	print('saved noID csv')
-	
-	#df2 = pandas.DataFrame(noID)
-	#df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	#df2.to_csv(todays_folder_path + filename + '_noID.csv')
-	#print('saved noID csv')
+	try:
+		df = pd.DataFrame(raw)
+		df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
+		df.to_csv(todays_folder_path + filename + '_raw.csv', index=False)
+		print(f'saved raw csv to {todays_folder_path}{filename}_raw.csv')
+	except Exception as e:
+		logger.exception("Exception occurred: %s", str(e))
+		
+	try:
+		df2 = pd.DataFrame(noID)
+		df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
+		df2.to_csv(todays_folder_path + filename + '_noID.csv', index=False)
+		print(f'saved noID csv to {todays_folder_path}{filename}_noID.csv')
+	except Exception as e:
+		logger.exception("Exception occurred: %s", str(e))
+		
 	
 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	tracking_time = time.time() - start
-	print(f"Tag tracking took {tracking_time} seconds, an average of {tracking_time / frame_num} seconds per frame") 
+	print(f"Tag tracking took {round(tracking_time),2} seconds, an average of {round(tracking_time / frame_num),2} seconds per frame") 
+	
+	if df.empty == True:
+		logger.Warning("df is empty")
+		
+	if df2.empty == True:
+		logger.Warning("df2 is empty")
+	
 	return df, df2, frame_num
 	
 	
@@ -240,9 +265,11 @@ def main():
 	
 	#check whether this script is being run via cron or in terminal/via Geany or some other text editor
 	if sys.stdout.isatty():
-		print("running in a real terminal")
+		print("Running tag tracking script from terminal")
+		logger.debug("Running tag tracking script from terminal")
 	else:
-		print("Nope this is being piped or redirected")
+		logger.debug("Running tag tracking script via crontab")
+		print("Running tag tracking script via crontab")
 		
 		#print(f"filename: {filename}")
 		#print(f"data folder path {setup.data_folder_path}")
@@ -270,6 +297,7 @@ def main():
 	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
 	parser.add_argument('-t', '--recording_time', type=int, default=setup.recording_time, help='the video recording time in seconds')
 	parser.add_argument('-fps', '--frames_per_second', type=int, default=setup.frames_per_second, choices=range(0,11), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
+	parser.add_argument('-afps', '--actual_frames_per_second', type=float, default=setup.actual_frames_per_second, help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
 	parser.add_argument('-sh', '--shutter', type=int, default=setup.shutter_speed, help='the exposure time, or shutter speed, of the camera in microseconds (1,000,000 microseconds in a second!!)')
 	parser.add_argument('-w', '--width', type=int, default=setup.width, help='the width of the image in pixels')
 	parser.add_argument('-ht', '--height', type=int, default=setup.height, help='the height of the image in pixels')
@@ -281,17 +309,13 @@ def main():
 	args = parser.parse_args()
 	
 	ret, todays_folder_path = create_todays_folder(args.data_folder_path)
-	
 	if ret == 1:
-	
 		print("Couldn't create todays folder to store data in. Exiting program. Sad!")
 		return 1
 		
 	hostname = socket.gethostname()
-	
 	now = datetime.now()
 	now = now.strftime('%Y-%m-%d_%H-%M-%S')
-	
 	filename = hostname + '_' + now
 
 	print(filename)
@@ -303,13 +327,44 @@ def main():
 	frames_list = array_capture(args.recording_time, args.frames_per_second, args.shutter, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 
 	print('about to track tags!')
-
 	df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
-	df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
-	df = behavioral_metrics.compute_social_center_distance(df)
-	video_averages = behavioral_metrics.compute_average_distance_and_speed_per_video(df, filename)
-	behavioral_metrics.store_cumulative_averages(filename)
 	
+	if df.empty == False and setup.calculate_behavior_metrics == True:
+		
+		if "speed" in setup.behavior_metrics:
+			try:
+				df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
+				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+				print('just computed speed')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+				
+		if "distance from center" in setup.behavior_metrics:
+			try:
+				df = behavioral_metrics.compute_social_center_distance(df)
+				#should writing to disk be inside or outside function?
+				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+				print('just computed distance from center')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+		
+		if "video averages" in setup.behavior_metrics:
+			try:	
+				video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
+				print('just computed video averages!')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+		
+		if "cumulative averages" in setup.behavior_metrics:
+			try:
+				running_averages = behavioral_metrics.store_cumulative_averages(filename)
+				print('just computed running averages!')
+			except Exception as e:
+				logger.debug("Exception occurred: %s", str(e))
+		
+			if running_averages.empty == True:
+				logger.warning("cumulative averages dataframe returned empty")
+			
 if __name__ == '__main__':
 	
 	main()
