@@ -13,7 +13,7 @@ colony_number = '01'
 tag_tracking = True
 
 '''only happens if tag_tracking is set to True! Record tag locations every x minutes for the given recording_time duration'''
-tag_tracking_frequency = 5
+tag_tracking_frequency = 2
 
 '''in pixels (4056 is the max width for the HQ camera'''
 width = 4056
@@ -31,7 +31,7 @@ recording_frequency = 30
 shutter_speed = 2500
 
 '''in seconds'''
-frames_per_second = 1
+frames_per_second = 2
 
 actual_frames_per_second = 2.5
 
@@ -86,9 +86,7 @@ elif infrared_preview == False:
 	preview_tuning_file = 'imx477.json'
  
 
-
-
-# to do:
-# aruco parameters
-# best ssh preview?
-# maybe its better to just choose None for preview width and height?
+'''Composite nest image for brood labelling - creation settings'''
+create_composite_nest_images = True
+nest_images_folder_path = "/mnt/bumblebox/data/2023-10-31"
+number_of_images = 15 #the number of images that will be used from today's data folder to create the image (if there are fewer than the number listed here, it will use all images)

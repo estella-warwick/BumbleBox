@@ -6,10 +6,11 @@ import logging
 import setup
 from datetime import datetime as dt
 
-logging.basicConfig(filename=f'{setup.bumblebox_dir}/logs/behavioral_metrics.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+logfile_folder = setup.bumblebox_dir
+logging.basicConfig(filename='behavioral_metrics.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-logger.debug("importing behavioral metrics, I think")
+logger.debug("importing behavioral metrics")
 
 def compute_speed(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int) -> pd.DataFrame:
     

@@ -1,0 +1,57 @@
+behavioral_metrics.py 2023-10-31 12:45:46,308: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 12:48:21,852: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 12:48:53,963: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 12:49:10,094: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 12:49:43,303: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 13:51:10,075: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 13:51:27,267: importing behavioral metrics, I think
+behavioral_metrics.py 2023-10-31 13:52:56,816: importing behavioral metrics, I think
+generate_nest_images.py 2023-10-31 13:52:56,819: Running tag tracking script from terminal
+behavioral_metrics.py 2023-10-31 13:57:59,568: importing behavioral metrics, I think
+ram_capture_tag_tracking.py 2023-10-31 13:57:59,569: Running tag tracking script from terminal
+picamera2.py 2023-10-31 13:57:59,651: Initialization successful.
+picamera2.py 2023-10-31 13:57:59,652: Camera now open.
+picamera2.py 2023-10-31 13:57:59,652: <libcamera._libcamera.CameraManager object at 0xdfa8a680>
+picamera2.py 2023-10-31 13:57:59,656: Requesting configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 13:57:59,659: Configuration successful!
+picamera2.py 2023-10-31 13:57:59,660: Final configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 13:57:59,661: Streams: {'main': <libcamera._libcamera.Stream object at 0xdfa8a720>, 'lores': None, 'raw': None}
+picamera2.py 2023-10-31 13:57:59,705: Allocated 4 buffers for stream 0.
+picamera2.py 2023-10-31 13:58:00,260: Camera started
+behavioral_metrics.py 2023-10-31 13:58:36,181: data written to /mnt/bumblebox/data/2023-10-31//bumblebox-01_2023-10-31_13-57-59_averages.csv', but as a 1D list:
+['bumblebox-01_2023-10-31_13-57-59' 1 0.0 59.0 3]
+behavioral_metrics.py 2023-10-31 14:09:32,318: importing behavioral metrics, I think
+ram_capture_tag_tracking.py 2023-10-31 14:09:32,319: Running tag tracking script from terminal
+picamera2.py 2023-10-31 14:09:32,380: Initialization successful.
+picamera2.py 2023-10-31 14:09:32,381: Camera now open.
+picamera2.py 2023-10-31 14:09:32,381: <libcamera._libcamera.CameraManager object at 0xdfd48020>
+picamera2.py 2023-10-31 14:09:32,385: Requesting configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 14:09:32,388: Configuration successful!
+picamera2.py 2023-10-31 14:09:32,389: Final configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 14:09:32,389: Streams: {'main': <libcamera._libcamera.Stream object at 0xdfd48140>, 'lores': None, 'raw': None}
+picamera2.py 2023-10-31 14:09:32,431: Allocated 4 buffers for stream 0.
+picamera2.py 2023-10-31 14:09:32,997: Camera started
+behavioral_metrics.py 2023-10-31 14:14:11,605: importing behavioral metrics, I think
+ram_capture_tag_tracking.py 2023-10-31 14:14:11,606: Running tag tracking script from terminal
+picamera2.py 2023-10-31 14:14:11,659: Initialization successful.
+picamera2.py 2023-10-31 14:14:11,659: Camera now open.
+picamera2.py 2023-10-31 14:14:11,659: <libcamera._libcamera.CameraManager object at 0xdf912720>
+picamera2.py 2023-10-31 14:14:11,664: Requesting configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 14:14:11,667: Configuration successful!
+picamera2.py 2023-10-31 14:14:11,668: Final configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 14:14:11,669: Streams: {'main': <libcamera._libcamera.Stream object at 0xdf9127c0>, 'lores': None, 'raw': None}
+picamera2.py 2023-10-31 14:14:11,712: Allocated 4 buffers for stream 0.
+picamera2.py 2023-10-31 14:14:12,454: Camera started
+behavioral_metrics.py 2023-10-31 14:19:33,152: importing behavioral metrics, I think
+ram_capture_tag_tracking.py 2023-10-31 14:19:33,153: Running tag tracking script from terminal
+picamera2.py 2023-10-31 14:19:33,209: Initialization successful.
+picamera2.py 2023-10-31 14:19:33,209: Camera now open.
+picamera2.py 2023-10-31 14:19:33,209: <libcamera._libcamera.CameraManager object at 0xdfddb5e0>
+picamera2.py 2023-10-31 14:19:33,214: Requesting configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 14:19:33,218: Configuration successful!
+picamera2.py 2023-10-31 14:19:33,219: Final configuration: {'use_case': 'preview', 'transform': <libcamera.Transform 'identity'>, 'colour_space': <libcamera.ColorSpace 'sYCC'>, 'buffer_count': 4, 'queue': True, 'main': {'format': 'YUV420', 'size': (4032, 3040), 'stride': 4032, 'framesize': 18385920}, 'lores': None, 'raw': None, 'controls': {'NoiseReductionMode': <NoiseReductionModeEnum.Minimal: 3>, 'FrameDurationLimits': (100, 83333)}, 'display': 'main', 'encode': 'main'}
+picamera2.py 2023-10-31 14:19:33,220: Streams: {'main': <libcamera._libcamera.Stream object at 0xdfddb680>, 'lores': None, 'raw': None}
+picamera2.py 2023-10-31 14:19:33,265: Allocated 4 buffers for stream 0.
+picamera2.py 2023-10-31 14:19:33,860: Camera started
+behavioral_metrics.py 2023-10-31 14:20:09,232: data written to /mnt/bumblebox/data/2023-10-31/bumblebox-01_2023-10-31_14-19-33_averages.csv', but as a 1D list:
+['bumblebox-01_2023-10-31_14-19-33' 13 0.0 nan 1]

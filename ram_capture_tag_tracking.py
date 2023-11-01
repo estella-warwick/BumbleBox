@@ -19,7 +19,6 @@ import behavioral_metrics
 import setup
 import logging
 
-
 logging.basicConfig(filename=f'{setup.bumblebox_dir}/logs/ram_capture_tag_tracking.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
@@ -147,13 +146,13 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 		
 		if index == int(len(frames_list) / 2 ):
 			#logging.debug(f"{todays_folder_path}{filename}.png'")
-			print(f"{todays_folder_path}{filename}.png'")
+			print(f"{todays_folder_path}/{filename}.png'")
 			frame_to_write = frame.copy()
 			gray = cv2.cvtColor(frame_to_write, cv2.COLOR_YUV2GRAY_I420)
 			clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
 			cl1 = clahe.apply(gray)
 			gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
-			cv2.imwrite(todays_folder_path + filename + '.png', frame)
+			cv2.imwrite(todays_folder_path + "/" + filename + '.png', frame)
 		
 		try:
 			gray = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
@@ -202,7 +201,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	try:
 		df = pd.DataFrame(raw)
 		df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-		df.to_csv(todays_folder_path + filename + '_raw.csv', index=False)
+		df.to_csv(todays_folder_path + "/" + filename + '_raw.csv', index=False)
 		print(f'saved raw csv to {todays_folder_path}{filename}_raw.csv')
 	except Exception as e:
 		logger.exception("Exception occurred: %s", str(e))
@@ -210,7 +209,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 	try:
 		df2 = pd.DataFrame(noID)
 		df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-		df2.to_csv(todays_folder_path + filename + '_noID.csv', index=False)
+		df2.to_csv(todays_folder_path + "/" + filename + '_noID.csv', index=False)
 		print(f'saved noID csv to {todays_folder_path}{filename}_noID.csv')
 	except Exception as e:
 		logger.exception("Exception occurred: %s", str(e))
@@ -219,46 +218,15 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
 	tracking_time = time.time() - start
-	print(f"Tag tracking took {round(tracking_time),2} seconds, an average of {round(tracking_time / frame_num),2} seconds per frame") 
+	print(f"Tag tracking took {round(tracking_time,2)} seconds, an average of {round(tracking_time / frame_num,2)} seconds per frame") 
 	
 	if df.empty == True:
-		logger.Warning("df is empty")
+		logger.warning("df is empty")
 		
 	if df2.empty == True:
-		logger.Warning("df2 is empty")
+		logger.warning("df2 is empty")
 	
 	return df, df2, frame_num
-	
-	
-
-def create_todays_folder(dirpath):
-
-	today = date.today()
-	today = today.strftime('/%Y-%m-%d/')
-	todays_folder_path = dirpath + today
-	
-	if not os.path.exists(todays_folder_path):
-		
-		try:
-			os.makedirs(todays_folder_path)
-			return 0, todays_folder_path
-		
-		except Exception as e:
-			print(e)
-			print(e.args)
-			print("Couldn't make today's folder for some reason... trying subprocess!")
-			try:
-				subprocess.call(['sudo', 'mkdir', '-p', todays_folder_path])
-				return 0, todays_folder_path
-			except:
-				print(e)
-				print(e.args)
-				print("That didn't work either! Huh...")
-				return 1, todays_folder_path
-	
-	else:
-		return 0, todays_folder_path
-
 	
 	
 def main():
@@ -270,7 +238,7 @@ def main():
 	else:
 		logger.debug("Running tag tracking script via crontab")
 		print("Running tag tracking script via crontab")
-		
+	
 		#print(f"filename: {filename}")
 		#print(f"data folder path {setup.data_folder_path}")
 		#print(f"data stored in this folder today: {todays_folder_path}")
@@ -294,7 +262,7 @@ def main():
 		# and assumes that the script arguments below will only be invoked by cron
 		
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
-	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
+	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default is /mnt/bumblebox/data')
 	parser.add_argument('-t', '--recording_time', type=int, default=setup.recording_time, help='the video recording time in seconds')
 	parser.add_argument('-fps', '--frames_per_second', type=int, default=setup.frames_per_second, choices=range(0,11), help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
 	parser.add_argument('-afps', '--actual_frames_per_second', type=float, default=setup.actual_frames_per_second, help='the number of frames recorded per second of video capture. At the moment this is still a bit experimental, we have gotten up to 6fps to work for mjpeg, and up to 10fps for mp4 videos.')
@@ -334,7 +302,7 @@ def main():
 		if "speed" in setup.behavior_metrics:
 			try:
 				df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
-				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+				df.to_csv(todays_folder_path + "/" + filename + '_updated.csv', index=False)
 				print('just computed speed')
 			except Exception as e:
 				logger.debug("Exception occurred: %s", str(e))
@@ -343,13 +311,13 @@ def main():
 			try:
 				df = behavioral_metrics.compute_social_center_distance(df)
 				#should writing to disk be inside or outside function?
-				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+				df.to_csv(todays_folder_path + "/" + filename + '_updated.csv', index=False)
 				print('just computed distance from center')
 			except Exception as e:
 				logger.debug("Exception occurred: %s", str(e))
 		
 		if "video averages" in setup.behavior_metrics:
-			try:	
+			try:
 				video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
 				print('just computed video averages!')
 			except Exception as e:

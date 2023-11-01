@@ -16,6 +16,7 @@ import cv2
 from cv2 import aruco
 from libcamera import controls
 import behavioral_metrics
+import setup
 from setup import colony_number
 import logging
 
@@ -255,7 +256,7 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 				ymean = c[:,1].mean() #for calculating the centroid
 				xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 				ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-				noID.append( [filename, colony_number, now, frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
+				noID.append( [filename, setup.colony_number, now, frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
 				#noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 			
 			if ids is not None:
@@ -265,7 +266,7 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 					ymean = c[:,1].mean() #for calculating the centroid
 					xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 					ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-					raw.append( [filename, colony_number, now, frame_num, int(ids[i]), float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
+					raw.append( [filename, setup.colony_number, now, frame_num, int(ids[i]), float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
 					#raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 			frame_num += 1
@@ -273,12 +274,12 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 		
 		df = pandas.DataFrame(raw)
 		df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-		df.to_csv(todays_folder_path + filename + '_augraw.csv')
+		df.to_csv(todays_folder_path + "/" + filename + '_augraw.csv')
 		print('saved raw csv')
 		#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
 		df2 = pandas.DataFrame(noID)
 		df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-		df2.to_csv(todays_folder_path + filename + '_noID.csv')
+		df2.to_csv(todays_folder_path + "/" + filename + '_noID.csv')
 		print('saved noID csv')
 		#df2.to_csv('/home/pi/Desktop/BumbleBox/testing/potential_csv.csv', index=False)
 
