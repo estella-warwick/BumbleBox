@@ -25,6 +25,7 @@ cron.write()
 job1 = cron.new(command='sudo chmod -R ugo+rwx /mnt/bumblebox')
 job1.every_reboot()
 cron.write()
+    
 
 '''schedule the record video script to run every X minutes based on the recording_frequency variable in setup.py'''
 job2 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} --box_type {setup.box_type} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/pi/Desktop/output.txt 2>&1')
@@ -48,7 +49,7 @@ if setup.tag_tracking == True:
         "7" : [0,7,14,21,28,35,42,49,56],
         "8" : [0,8,16,24,32,40,48,56],
         "9" : [0,9,18,27,36,45,54],
-        "10" : [0,10,20,30,40,50,60],
+        "10" : [0,10,20,30,40,50],
         "15" : [0,15,30,45],
         "20" : [0,20,40],
         "30" : [0, 30],
@@ -72,3 +73,11 @@ if setup.tag_tracking == True:
         job3.minute.also.on(minute)
 
     cron.write()
+
+if setup.create_composite_nest_images == True:
+    
+    generate_nest_images_path = find_file('generate_nest_images.py', '/home/pi')
+    job4 = cron.new(command=f'python3 {generate_nest_images_path} --data_folder_path {setup.data_folder_path} --number_of_images {setup.number_of_images}')
+    job4.setall("0 23 * * *")
+    cron.write()
+

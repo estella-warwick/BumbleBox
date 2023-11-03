@@ -19,7 +19,7 @@ import behavioral_metrics
 import setup
 import logging
 
-logging.basicConfig(filename=f'{setup.bumblebox_dir}/logs/ram_capture_tag_tracking.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+logging.basicConfig(filename='/home/pi/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -149,10 +149,10 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 			print(f"{todays_folder_path}/{filename}.png'")
 			frame_to_write = frame.copy()
 			gray = cv2.cvtColor(frame_to_write, cv2.COLOR_YUV2GRAY_I420)
-			clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
-			cl1 = clahe.apply(gray)
-			gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
-			cv2.imwrite(todays_folder_path + "/" + filename + '.png', frame)
+			#clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
+			#cl1 = clahe.apply(gray)
+			#gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB) #needlessly converts to 3d array from 2d array, less data when sticking with the 2d array
+			cv2.imwrite(todays_folder_path + "/" + filename + '.png', gray)
 		
 		try:
 			gray = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
@@ -239,6 +239,15 @@ def main():
 		logger.debug("Running tag tracking script via crontab")
 		print("Running tag tracking script via crontab")
 	
+	if setup.create_composite_nest_images == True:
+		
+		gen_im_time = datetime(1970, 1, 1, 23, 0, 0)
+		now = datetime.now()
+		
+		if gen_im_time.hour == now.hour and gen_im_time.minute == now.minute:
+			logger.debug("Exiting because the generate_nest_images.py script is running now")
+			return print("ending now because the image generation function should be running")
+		
 		#print(f"filename: {filename}")
 		#print(f"data folder path {setup.data_folder_path}")
 		#print(f"data stored in this folder today: {todays_folder_path}")
@@ -336,3 +345,4 @@ def main():
 if __name__ == '__main__':
 	
 	main()
+	logging.shutdown()

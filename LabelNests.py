@@ -187,7 +187,7 @@ def labelNest(directory):
     print('Running Labelme now... I have preloaded the labels to use for these images. Of course, you dont need to use labels that dont apply to your circumstances. Use the designated shapes for each label that is provided. For example, in order to draw the perimeter of the nest, Ill use the polygon tool, because the label says Nest perimeter (polygon). Right click to choose what types of shapes you want to use!')
     print(directory)
     print(type(directory))
-    subprocess.run(['labelme', setup.bumblebox_dir, '--config', setup.bumblebox_dir + 'labelmerc', '--output', directory + '/Labelled Nest Files' ])
+    subprocess.run(['labelme', setup.bumblebox_dir, '--config', setup.bumblebox_dir + '/labelmerc', '--output', directory + '/Labelled Nest Files' ])
     #subprocess.run(['labelme', dir, '--labels', 'Arena perimeter (polygon),Nest perimeter (polygon),Eggs perimeter (polygons),Eggs (points),Larvae (circles),Pupae (circles),Queen larva (circles),Queen pupae,Wax pots (circles),full nectar pot (circles),empty wax pots (circles),pollen balls (circles), nectar source (circle)'])
 
     #subprocess.run(['labelme', dir, '--labels', 'nest perimeter,eggs (perimeter),eggs (circles),larvae,pupae,queen cell,wax pot,full nectar pot,empty wax pot,pollen ball, nectar source',
@@ -239,7 +239,7 @@ def main(argv):
     directory = setup.data_folder_path + '/Nest Images'
     
     
-    vids2medianimg(directory)
+    #vids2medianimg(directory)
     labelNest(directory)
 
 

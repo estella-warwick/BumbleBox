@@ -6,8 +6,8 @@ import logging
 import setup
 from datetime import datetime as dt
 
-logfile_folder = setup.bumblebox_dir
-logging.basicConfig(filename='behavioral_metrics.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+#logfile_folder = setup.bumblebox_dir
+#logging.basicConfig(filename='behavioral_metrics.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 logger.debug("importing behavioral metrics")
@@ -29,6 +29,7 @@ def compute_speed(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int) -> pd.D
     df_sorted.loc[:, 'speed'] = sub_df.loc[:, 'speed']
     # Drop temporary columns used for computations
     df_sorted.drop(columns=['deltaX', 'deltaY'], inplace=True)
+    
     return df_sorted
     
     
@@ -46,8 +47,9 @@ def compute_social_center_distance(df: pd.DataFrame) -> pd.DataFrame:
    
     # Drop temporary columns used for computations
     df.drop(columns=['centerX', 'centerY'], inplace=True)
-   
-    return df
+    df_sorted = df.sort_values(by=['frame','ID'])
+    
+    return df_sorted
     
 
 
@@ -79,34 +81,36 @@ def compute_video_averages(df: pd.DataFrame, todays_folder_path: str, filename: 
     
     
     
-def compile_dfs(directory_path, start_filename, end_filename = None, format = None, end_of_filename = 'averages.csv'):
+def compile_dfs(directory_path, start_filename = None, end_filename = None, format = None, end_of_filename = 'averages.csv'):
     #not done yet!
     if format == None:
         format = '%Y-%m-%d_%H-%M-%S'
-        
-    hostname, date, time, ext = start_filename.split("_")
-    hostname2, date2, time2, ext2 = end_filename.split("_")
-    start_datetime = date + "_" + time
-    end_datetime = date2 + "_" + time2
-    print(end_datetime)
     
-    start_datetime = dt.strptime(start_datetime, format)
-    end_datetime = dt.strptime(end_datetime, format)
+    if start_filename != None:
+        hostname, date, time, ext = start_filename.split("_")
+        start_datetime = date + "_" + time
+        start_datetime = dt.strptime(start_datetime, format)
+        
+    if end_filename != None:
+        hostname2, date2, time2, ext2 = end_filename.split("_")
+        end_datetime = date2 + "_" + time2
+        end_datetime = dt.strptime(end_datetime, format)
     
     df_list = []
     
-    for paths, dirs, files in os.walk(directory_path):
-        for path in paths:
-            for filename in files:
-                hostname3, date3, time3, ext3 = file.split("_")
-                if ext3 == end_of_filename:
-                    datetime = date3 + time3
-                    datetime = datetime.strptime(datetime, format)
-                    
-                    if start_datetime <= datetime <= end_datetime:
-                        print(path)
-                        df = pd.DataFrame(path)
+    if start_filename != None and end_filename != None:
+        for paths, dirs, files in os.walk(directory_path):
+            for path in paths:
+                for filename in files:
+                    hostname3, date3, time3, ext3 = file.split("_")
+                    if ext3 == end_of_filename:
+                        datetime = date3 + time3
+                        datetime = datetime.strptime(datetime, format)
                         
+                        if start_datetime <= datetime <= end_datetime:
+                            print(path)
+                            df = pd.DataFrame(path)
+                            
             
             
             

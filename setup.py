@@ -13,7 +13,7 @@ colony_number = '01'
 tag_tracking = True
 
 '''only happens if tag_tracking is set to True! Record tag locations every x minutes for the given recording_time duration'''
-tag_tracking_frequency = 2
+tag_tracking_frequency = 5
 
 '''in pixels (4056 is the max width for the HQ camera'''
 width = 4056
@@ -22,7 +22,7 @@ width = 4056
 height = 3040
 
 '''in seconds, used whether tag_tracking is True or False'''
-recording_time = 5
+recording_time = 20
 
 '''make a recording every X minutes'''
 recording_frequency = 30
@@ -84,9 +84,11 @@ if infrared_preview == True:
 
 elif infrared_preview == False:
 	preview_tuning_file = 'imx477.json'
- 
+
 
 '''Composite nest image for brood labelling - creation settings'''
 create_composite_nest_images = True
-nest_images_folder_path = "/mnt/bumblebox/data/2023-10-31"
-number_of_images = 15 #the number of images that will be used from today's data folder to create the image (if there are fewer than the number listed here, it will use all images)
+nest_images_folder_path = "/mnt/bumblebox/data/2023-11-02" # This is only used if the images arent being generated automatically. Otherwise, they are generated from todays data folder at 11pm
+number_of_images = 60 #the number of images that will be used from today's data folder to create the image (if there are fewer than the number listed here, it will use all images)
+composite_images_per_day = 1 #Needs to be 1 for now, will change later
+

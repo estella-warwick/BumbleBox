@@ -11,6 +11,7 @@ import socket
 import argparse
 import os
 import subprocess
+import sys
 from sys import getsizeof
 import cv2
 from cv2 import aruco
@@ -20,7 +21,7 @@ import setup
 from setup import colony_number
 import logging
 
-logging.basicConfig(filename=f'{setup.bumblebox_dir}/logs/record_video.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+logging.basicConfig(filename='/home/pi/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -292,9 +293,21 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 def main():
 	
 	if sys.stdout.isatty():
-		print("running in a real terminal")
+		print("Running video recording script from terminal")
+		logger.debug("Running video recording script from terminal")
 	else:
-		print("Nope this is being piped or redirected")
+		logger.debug("Running video recording script via crontab")
+		print("Running video recording script via crontab")
+		
+	#not sure if we even need this code, images are looking good - for this and ram tag capture
+	if setup.create_composite_nest_images == True:
+		
+		gen_im_time = datetime(1970, 1, 1, 23, 0, 0)
+		now = datetime.now()
+		
+		if gen_im_time.hour == now.hour and gen_im_time.minute == now.minute:
+			logger.debug("Exiting because the generate_nest_images.py script is running now")
+			return print("ending now because the image generation function should be running")
 	
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
 	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default path is: /mnt/bumblebox/data/')
@@ -376,5 +389,5 @@ def main():
 if __name__ == '__main__':
 	
 	main()
-	
+	logging.shutdown()
 	
