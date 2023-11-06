@@ -65,8 +65,13 @@ tag_dictionary = '4X4_50'
 box_type = 'custom'
 
 calculate_behavior_metrics = True
-behavior_metrics = ['speed','distance from center', 'video averages']
+behavior_metrics = ['speed','distance from center', 'contacts', 'video averages']
+contact_distance = 1 #in centimeters
 
+if box_type == 'custom':
+	pixel_contact_distance == 205
+	
+	#add pcd for koppert box
 
 
 '''preview settings'''
