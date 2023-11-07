@@ -27,13 +27,15 @@ recording_time = 20
 '''make a recording every X minutes'''
 recording_frequency = 30
 
+track_recorded_videos = True
+
 '''in microseconds'''
 shutter_speed = 2500
 
 '''in seconds'''
-frames_per_second = 2
+frames_per_second = 3
 
-actual_frames_per_second = 2.5
+actual_frames_per_second = 3.2
 
 ''' the options are 'mp4' or 'mjpeg' '''
 codec = 'mp4'

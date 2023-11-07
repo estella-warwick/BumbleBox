@@ -4,6 +4,7 @@
 import setup
 from crontab import CronTab
 import os
+import subprocess
 
 def find_file(file_name, directory_path):
     for dirpath, dirnames, fnames in os.walk(directory_path):
@@ -17,12 +18,12 @@ record_video_path = find_file('record_video.py', '/home/pi')
 '''make sure the computer recognizes the thumb drive or storage device when the computer turns on, and name it bumblebox'''
 cron = CronTab(user='pi')
 cron.remove_all()
-job1 = cron.new(command='sudo mount /dev/sda1 /mnt/bumblebox -o umask=000')
+job1 = cron.new(command=f'sudo mount /dev/sda1 {setup.data_folder_path} -o umask=000')
 job1.every_reboot()
 cron.write()
 
 '''make sure that we can write to this storage drive and to folders that we create on it'''
-job1 = cron.new(command='sudo chmod -R ugo+rwx /mnt/bumblebox')
+job1 = cron.new(command=f'sudo chmod -R ugo+rwx {setup.data_folder_path}')
 job1.every_reboot()
 cron.write()
     
@@ -81,3 +82,10 @@ if setup.create_composite_nest_images == True:
     job4.setall("0 23 * * *")
     cron.write()
 
+
+try:
+    subprocess.call(['crontab', '-l'])
+except:
+    print(e)
+    print(e.args)
+    print("Couldnt print the crontab commands")

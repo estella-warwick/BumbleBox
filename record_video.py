@@ -347,44 +347,45 @@ def main():
 	if args.codec == 'mjpeg':
 		filepath = picam2_record_mjpeg(filename,todays_folder_path, args.recording_time, args.quality, args.frames_per_second, args.width, args.height, args.tuning_file, args.noise_reduction, args.digital_zoom)
 	
-	print('starting to track tags from the saved video!')
-	df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now, hostname, colony_number)
-	
-	if df.empty == False and setup.calculate_behavior_metrics == True:
+	if setup.track_recorded_videos == True:
+		print('starting to track tags from the saved video!')
+		df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now, hostname, colony_number)
 		
-		if "speed" in setup.behavior_metrics:
-			try:
-				df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
-				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
-				print('just computed speed')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
-				
-		if "distance from center" in setup.behavior_metrics:
-			try:
-				df = behavioral_metrics.compute_social_center_distance(df)
-				#should writing to disk be inside or outside function?
-				df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
-				print('just computed distance from center')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
-		
-		if "video averages" in setup.behavior_metrics:
-			try:	
-				video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
-				print('just computed video averages!')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
-		
-		if "cumulative averages" in setup.behavior_metrics:
-			try:
-				running_averages = behavioral_metrics.store_cumulative_averages(filename)
-				print('just computed running averages!')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
-		
-			if running_averages.empty == True:
-				logger.warning("cumulative averages dataframe returned empty")
+		if df.empty == False and setup.calculate_behavior_metrics == True:
+			
+			if "speed" in setup.behavior_metrics:
+				try:
+					df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
+					df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+					print('just computed speed')
+				except Exception as e:
+					logger.debug("Exception occurred: %s", str(e))
+					
+			if "distance from center" in setup.behavior_metrics:
+				try:
+					df = behavioral_metrics.compute_social_center_distance(df)
+					#should writing to disk be inside or outside function?
+					df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
+					print('just computed distance from center')
+				except Exception as e:
+					logger.debug("Exception occurred: %s", str(e))
+			
+			if "video averages" in setup.behavior_metrics:
+				try:	
+					video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
+					print('just computed video averages!')
+				except Exception as e:
+					logger.debug("Exception occurred: %s", str(e))
+			
+			if "cumulative averages" in setup.behavior_metrics:
+				try:
+					running_averages = behavioral_metrics.store_cumulative_averages(filename)
+					print('just computed running averages!')
+				except Exception as e:
+					logger.debug("Exception occurred: %s", str(e))
+			
+				if running_averages.empty == True:
+					logger.warning("cumulative averages dataframe returned empty")
 	
 if __name__ == '__main__':
 	
