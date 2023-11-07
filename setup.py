@@ -65,11 +65,11 @@ tag_dictionary = '4X4_50'
 box_type = 'custom'
 
 calculate_behavior_metrics = True
-behavior_metrics = ['speed','distance from center', 'contacts', 'video averages']
-contact_distance = 1 #in centimeters
+behavior_metrics = ['speed','distance from center', 'pairwise distance', 'contacts', 'video averages']
+contact_distance = 2.0 #in centimeters
 
 if box_type == 'custom':
-	pixel_contact_distance == 205
+	pixel_contact_distance = 206.1
 	
 	#add pcd for koppert box
 
@@ -95,5 +95,5 @@ elif infrared_preview == False:
 create_composite_nest_images = True
 nest_images_folder_path = "/mnt/bumblebox/data/2023-11-02" # This is only used if the images arent being generated automatically. Otherwise, they are generated from todays data folder at 11pm
 number_of_images = 60 #the number of images that will be used from today's data folder to create the image (if there are fewer than the number listed here, it will use all images)
-composite_images_per_day = 1 #Needs to be 1 for now, will change later
+composite_images_per_day = 1 #Needs to be 1 for now
 

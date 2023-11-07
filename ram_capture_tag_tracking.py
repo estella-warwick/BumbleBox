@@ -308,6 +308,9 @@ def main():
 	
 	if df.empty == False and setup.calculate_behavior_metrics == True:
 		
+		behavioral_metrics.calculate_behavior_metrics(df, setup.actual_frames_per_second, todays_folder_path, filename)
+		print("Calculating behavior metrics")
+		'''
 		if "speed" in setup.behavior_metrics:
 			try:
 				df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
@@ -341,7 +344,7 @@ def main():
 		
 			if running_averages.empty == True:
 				logger.warning("cumulative averages dataframe returned empty")
-			
+			'''
 if __name__ == '__main__':
 	
 	main()
