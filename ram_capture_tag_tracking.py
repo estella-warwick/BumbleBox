@@ -18,6 +18,7 @@ import os
 import behavioral_metrics
 import setup
 import logging
+from data_cleaning import interpolate
 
 logging.basicConfig(filename='/home/pi/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
@@ -84,16 +85,15 @@ def array_capture(recording_time, fps, shutter_speed, width, height, tuning_file
 	finished = time.time()-start_time
 	print(f'finished capturing frames to arrays, captured {i} frames in {round(finished,2)} seconds')
 	rate = i / finished
-	print(f'thats {round(rate,2)} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
+	print(f'\nthats {round(rate,2)} frames per second!\n\n\nMake sure this corresponds well to your desired framerate and write this number into the actual_frame_rate setting in settings.py. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
 	sizeof = getsizeof(frames_list)
-	print(f"Size of list storing the frames: {sizeof} bytes")
 	
 	return frames_list
 		
 		
 		
 def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, box_type, now, hostname, colony_number):
-	print(tag_dictionary)
+
 	if tag_dictionary is None:
 		tag_dictionary = '4X4_50'
 		if isinstance(tag_dictionary, str):
@@ -178,7 +178,6 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 			ymean = c[:,1].mean() #for calculating the centroid
 			xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 			ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-			#noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 			noID.append( [filename, colony_number, now, frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
 			
 		if ids is not None:
@@ -188,15 +187,10 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 				ymean = c[:,1].mean() #for calculating the centroid
 				xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 				ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
-				#raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 				raw.append( [filename, colony_number, now, frame_num, int(ids[i]), float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
 		frame_num += 1
 		print(f"processed frame {index}")  
 	
-	#df = pandas.DataFrame(raw)
-	#df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
-	#df.to_csv(todays_folder_path + filename + '_raw.csv')
-	#print('saved raw csv')
 	
 	try:
 		df = pd.DataFrame(raw)
@@ -248,27 +242,6 @@ def main():
 			logger.debug("Exiting because the generate_nest_images.py script is running now")
 			return print("ending now because the image generation function should be running")
 		
-		#print(f"filename: {filename}")
-		#print(f"data folder path {setup.data_folder_path}")
-		#print(f"data stored in this folder today: {todays_folder_path}")
-		#print(f"recording time: {setup.recording_time}"
-		#print(f"frames per second: {setup.frames_per_second}"
-		
-		#frames_list = array_capture(setup.recording_time, setup.frames_per_second, setup.shutter, setup.width, setup.height, setup.tuning_file, setup.noise_reduction, setup.digital_zoom)
-
-		#print('about to track tags!')
-	
-		#df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, setup.tag_dictionary, setup.box_type, now, hostname, colony_number)
-		#print(df.head)
-		#df = behavioral_metrics.compute_speed(df,args.frames_per_second,4)
-		#df = compute_social_center_distance(df)
-		#video_averages = compute_average_distance_and_speed_per_video(df)
-		#store_cumulative_averages(video_averages)
-	
-	
-		
-		# this assumes that user will run these scripts through a text editor rather than typing them into terminal
-		# and assumes that the script arguments below will only be invoked by cron
 		
 	parser = argparse.ArgumentParser(prog='Record a video, either an mp4 or mjpeg video! Program defaults to mp4 currently.')
 	parser.add_argument('-p', '--data_folder_path', type=str, default=setup.data_folder_path, help='a path to the folder you want to collect data in. Default is /mnt/bumblebox/data')
@@ -306,45 +279,17 @@ def main():
 	print('about to track tags!')
 	df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
 	
+	if setup.interpolate_data == True and df.empty == False:
+            df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
+	
 	if df.empty == False and setup.calculate_behavior_metrics == True:
 		
 		behavioral_metrics.calculate_behavior_metrics(df, setup.actual_frames_per_second, todays_folder_path, filename)
 		print("Calculating behavior metrics")
-		'''
-		if "speed" in setup.behavior_metrics:
-			try:
-				df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
-				df.to_csv(todays_folder_path + "/" + filename + '_updated.csv', index=False)
-				print('just computed speed')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
-				
-		if "distance from center" in setup.behavior_metrics:
-			try:
-				df = behavioral_metrics.compute_social_center_distance(df)
-				#should writing to disk be inside or outside function?
-				df.to_csv(todays_folder_path + "/" + filename + '_updated.csv', index=False)
-				print('just computed distance from center')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
 		
-		if "video averages" in setup.behavior_metrics:
-			try:
-				video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
-				print('just computed video averages!')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
 		
-		if "cumulative averages" in setup.behavior_metrics:
-			try:
-				running_averages = behavioral_metrics.store_cumulative_averages(filename)
-				print('just computed running averages!')
-			except Exception as e:
-				logger.debug("Exception occurred: %s", str(e))
 		
-			if running_averages.empty == True:
-				logger.warning("cumulative averages dataframe returned empty")
-			'''
+		
 if __name__ == '__main__':
 	
 	main()

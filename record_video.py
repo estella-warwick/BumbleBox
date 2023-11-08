@@ -19,6 +19,7 @@ from libcamera import controls
 import behavioral_metrics
 import setup
 from setup import colony_number
+from data_cleaning import interpolate
 import logging
 
 logging.basicConfig(filename='/home/pi/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
@@ -104,7 +105,6 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	cv2.destroyAllWindows()
 	return output
 	
-
 
 
 
@@ -350,6 +350,9 @@ def main():
 	if setup.track_recorded_videos == True:
 		print('starting to track tags from the saved video!')
 		df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now, hostname, colony_number)
+		
+		if setup.interpolate_data == True and df.empty == False:
+			df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
 		
 		if df.empty == False and setup.calculate_behavior_metrics == True:
 			

@@ -187,14 +187,14 @@ def labelNest(directory):
     print('Running Labelme now... I have preloaded the labels to use for these images. Of course, you dont need to use labels that dont apply to your circumstances. Use the designated shapes for each label that is provided. For example, in order to draw the perimeter of the nest, Ill use the polygon tool, because the label says Nest perimeter (polygon). Right click to choose what types of shapes you want to use!')
     print(directory)
     print(type(directory))
-    subprocess.run(['labelme', setup.bumblebox_dir, '--config', setup.bumblebox_dir + '/labelmerc', '--output', directory + '/LabelledNestFiles' ])
+    subprocess.run(['labelme', setup.bumblebox_dir, '--config', setup.bumblebox_dir + '/labelmerc', '--output', directory + '/Labelled Nest Files' ])
     #subprocess.run(['labelme', dir, '--labels', 'Arena perimeter (polygon),Nest perimeter (polygon),Eggs perimeter (polygons),Eggs (points),Larvae (circles),Pupae (circles),Queen larva (circles),Queen pupae,Wax pots (circles),full nectar pot (circles),empty wax pots (circles),pollen balls (circles), nectar source (circle)'])
 
     #subprocess.run(['labelme', dir, '--labels', 'nest perimeter,eggs (perimeter),eggs (circles),larvae,pupae,queen cell,wax pot,full nectar pot,empty wax pot,pollen ball, nectar source',
     #                '--shapes', 'polygon,polygon,points,cirlce,circle,circle,circle,circle,circle,circle,circle,circle', '--colors', 'yellow,orange,red,green,blue,purple,turquoise,magenta,pink'
     #                ]) #edit this line to add colours
     print('huh... is this on?')
-    jsons = sorted(glob.glob(os.path.join(directory + '/LabelledNestFiles', '*.json')))
+    jsons = sorted(glob.glob(os.path.join(directory + '/Labelled Nest Files', '*.json')))
     if len(jsons) < 1:
         print('''Looks like you didn't save your work into a .json file inside Labelme, or you didnt save it to the LabelledNestFiles.\n''')
     for file in jsons: #to do: check whether a CSV already exists? Or just overwrite the old one, depending on how long it takes?
@@ -234,9 +234,9 @@ def labelNest(directory):
 
 def main(argv):
     
-    if not os.path.exists(setup.data_folder_path + '/NestImages/LabelledNestFiles'):
-        os.makedirs(setup.data_folder_path + '/NestImages/LabelledNestFiles')
-    directory = setup.data_folder_path + '/NestImages'
+    if not os.path.exists(setup.data_folder_path + '/Nest Images/Labelled Nest Files'):
+        os.makedirs(setup.data_folder_path + '/Nest Images/Labelled Nest Files')
+    directory = setup.data_folder_path + '/Nest Images'
     
     
     #vids2medianimg(directory)

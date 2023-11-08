@@ -72,7 +72,7 @@ def generate_nest_image(todays_folder_path, today, number_of_images, hostname, s
         h,w,d = gray_img.shape
         print("Image is 3d")
         x = da.zeros((total_frames,h,w,d)).astype('uint8')
-        print(f"x shape: {x.shape}")
+        print(f"empty image array shape: {x.shape}")
     except:
         h,w = gray_img.shape
         x = da.zeros((total_frames,h,w)).astype('uint8')
@@ -104,13 +104,16 @@ def generate_nest_image(todays_folder_path, today, number_of_images, hostname, s
             index += 1
         except Exception as e:
             print(e)
-            print('had a dimension issue, image not 3d')
+            #print('had a dimension issue, image not 3d')
             h,w = gray_img.shape
             file_dimensions.append((h,w))
             if h != file_dimensions[0][0] and w != file_dimensions[0][1]:
                 gray_img = cv2.resize(gray_img, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(gray_img.shape)
-            x[index] = gray_img
+            print(f'gray image shape: {gray_img.shape}. Empty frame shape: {x[index].shape}')
+            try:
+                x[index] = gray_img
+            except:
+                print("Skipping image, its dimensions arent the same as that of the first image in this randomized list")
             index += 1
             
     print("Computing image")
@@ -305,12 +308,11 @@ def main():
     #run_via_cron = None
     
     if sys.stdout.isatty():
-        print("Running generate nest image script from terminal")
+        print("Running from terminal")
         logger.debug("Running generate nest image script from terminal")
         #run_via_cron = False
-        todays_folder_path = setup.nest_images_folder_path
         
-        print(f"Running the generate_nest_images script! Remember, Im looking for images in:\n{setup.nest_images_folder_path}\nI set this path because you are running the script yourself and so are supposed to set the path yourself. I pulled the path from the variable nest_images_folder_path in the script setup.py.\nDo you want to use a different folder?")   
+        print(f"This is the generate_nest_images script! Im looking for images in:\n\n{todays_folder_path}\n\nThis is todays data folder.\nDo you want to use a different folder?")   
         print("\n")
         yes_or_no = input("Enter yes or no: ")
         

@@ -18,12 +18,12 @@ record_video_path = find_file('record_video.py', '/home/pi')
 '''make sure the computer recognizes the thumb drive or storage device when the computer turns on, and name it bumblebox'''
 cron = CronTab(user='pi')
 cron.remove_all()
-job1 = cron.new(command=f'sudo mount /dev/sda1 {setup.data_folder_path} -o umask=000')
+job1 = cron.new(command=f'sudo mount /dev/sda1 /mnt/bumblebox/data -o umask=000')
 job1.every_reboot()
 cron.write()
 
 '''make sure that we can write to this storage drive and to folders that we create on it'''
-job1 = cron.new(command=f'sudo chmod -R ugo+rwx {setup.data_folder_path}')
+job1 = cron.new(command=f'sudo chmod -R ugo+rwx /mnt/bumblebox/data')
 job1.every_reboot()
 cron.write()
     

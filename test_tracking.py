@@ -3,6 +3,8 @@ from cv2 import aruco
 import setup
 from picamera2 import Picamera2
 import time
+from statistics import mean 
+
 #edit code to add in rejected image points
 def test_tracking(preview_time, width, height, tag_dictionary, box_type, shutter_speed, digital_zoom, tuning_file):
 	if tag_dictionary is None:
@@ -69,6 +71,8 @@ def test_tracking(preview_time, width, height, tag_dictionary, box_type, shutter
 	
 	start_time = time.time()
 	
+	tag_avg_list = []
+	
 	while ( (time.time() - start_time) < preview_time):
 		
 		array = picam2.capture_array()
@@ -87,10 +91,19 @@ def test_tracking(preview_time, width, height, tag_dictionary, box_type, shutter
 			
 		corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
 		frame_markers = aruco.drawDetectedMarkers(gray.copy(), corners, ids)
+		tag_avg_list.append(len(ids))
 		resized = cv2.resize(frame_markers, (1352,1013), interpolation = cv2.INTER_AREA)
 		cv2.imshow("frame",resized)
-		cv2.waitKey(5000)
-			
+		#cv2.waitKey(5000)
+		k = cv2.waitKey(5000) & 0xFF
+		print(k)
+		print(f"Numbers of tags tracked: {len(ids)}")
+		if k == 27:
+			cv2.destroyAllWindows()
+			break
+		
+		
+	print(f"Average number of tags tracked: {round(mean(tag_avg_list),2)}")
 		
 def main():
 	

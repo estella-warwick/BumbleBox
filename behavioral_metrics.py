@@ -9,6 +9,7 @@ from datetime import date
 import os
 from scipy import spatial
 import glob
+from data_cleaning import interpolate
 
 #Enter a folder path to run this script on data youve already collected without calculating behavior metrics. Type the path to the parent folder of your data
 folder_path = '/mnt/bumblebox/data' #Otherwise it should be set to None
@@ -376,7 +377,24 @@ def calculate_behavior_metrics(df, actual_frames_per_second, todays_folder_path,
 
 if __name__ == '__main__':
     
-    #ret, todays_folder_path = create_todays_folder(setup.data_folder_path)
+    print(f"Run this script to calculate behavioral metrics on a set of data! Im looking for data in:\n\n{todays_folder_path}\n\nThis is todays data folder.\nDo you want to use a different folder?")   
+    print("\n")
+    yes_or_no = input("Enter yes or no: ")
+    
+    while yes_or_no != "yes" and yes_or_no != "no":
+        print("Do you want to use a different folder?")
+        yes_or_no = input("Please enter either yes or no, all lowercase: ")
+        
+    if yes_or_no == "yes":
+        print("Type the new path without a trailing \"/\" after the folder name - Example: /mnt/bumblebox/data/2023-10-23")
+        todays_folder_path = input("Folder path: ")
+        print(f"Using {todays_folder_path}. Moving on!")
+    
+    elif yes_or_no == "no":
+        print("Moving on, then!")
+    
+    else:
+        print("Type yes or no, all lowercase. Try again!")
     
     for file in glob.glob(folder_path + '/**/*_raw.csv', recursive=True):
         print(file)
@@ -389,5 +407,8 @@ if __name__ == '__main__':
         except Exception as e:
             print("Exception occurred: %s", str(e))
             continue
-            
+        
+        ''' check whether files have been interpolated yet or not '''
+        if setup.interpolate_data == True:
+            df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
         calculate_behavior_metrics(df,setup.actual_frames_per_second,head,filename)
