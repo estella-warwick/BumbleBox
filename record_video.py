@@ -21,8 +21,11 @@ import setup
 from setup import colony_number
 from data_cleaning import interpolate
 import logging
+import pwd
+import pandas as pd
 
-logging.basicConfig(filename='/home/pi/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+username = pwd.getpwuid(os.getuid())[0]
+logging.basicConfig(filename=f'/home/{username}/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -69,7 +72,6 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	time.sleep(2)
 	start_time = time.time()
 	
-	#frames_dict = {}
 	frames_list = []
 	i = 0
 	
@@ -90,16 +92,15 @@ def picam2_record_mp4(filename, outdir, recording_time, fps, shutter_speed, widt
 	print(f'thats {rate} frames per second!\nMake sure this corresponds well to your desired framerate. FPS is a bit experimental for tag tracking and mp4 recording at the moment... Thats the tradeoff for allowing a higher framerate.')
 	
 	output = outdir+'/'+filename+'.mp4'
+	print(output)
 	vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 	out = cv2.VideoWriter(output,vid_fourcc,10,(4032,3040))
 	
 	for i, im_array in enumerate(frames_list):
 		frame = im_array[0]
-		#gray_im = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
 		rgb_im = cv2.cvtColor(frame, cv2.COLOR_YUV420p2RGB)
 		out.write(rgb_im)
 		print("wrote another frame!")
-		#out.write(gray_im)
 
 	out.release()
 	cv2.destroyAllWindows()
@@ -182,8 +183,8 @@ def create_todays_folder(dirpath):
 	
 
 #add my csv tracking alternative in for now, along with in the ram_capture script - this so I can add functions quickly 
-def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box_type):
-	
+def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box_type, now):
+	print('got here')
 	print(tag_dictionary)
 	if tag_dictionary is None:
 		tag_dictionary = '4X4_50'
@@ -201,8 +202,9 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 		if not hasattr(cv2.aruco, tag_dictionary):
 			raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
 		tag_dictionary = getattr(cv2.aruco, tag_dictionary)
-	aruco_dict = aruco.Dictionary_get(tag_dictionary) 
-	parameters = aruco.DetectorParameters_create()
+	tag_dictionary = aruco.getPredefinedDictionary(tag_dictionary) 
+	parameters = aruco.DetectorParameters()
+	detector = aruco.ArucoDetector(tag_dictionary, parameters)
 	
 	if box_type=='custom':
 		#change these!
@@ -225,7 +227,7 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 		parameters.adaptiveThreshWinSizeStep=6
 		parameters.polygonalApproxAccuracyRate=0.06
 
-
+	print('got here 1')
 	vid = cv2.VideoCapture(filepath)
 	
 	frame_num = 0
@@ -234,13 +236,14 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 	augs_csv = []
 	
 	start = time.time()
-	
-	while(vid.Isopened()):
-		
+	print('got here 2')
+	while(vid.isOpened()):
+		print('got here 3')
 		ret,frame = vid.read()
 		if ret == True:
+			print(frame.shape)
 			try:
-				gray = cv2.cvtColor(frame, cv2.COLOR_YUV2GRAY_I420)
+				gray = cv2.cvtColor(frame, cv2.COLOR_RGB2GRAY)
 				clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
 				cl1 = clahe.apply(gray)
 				gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
@@ -249,7 +252,7 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 				print('converting to grayscale didnt work...')
 				continue
 				
-			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
+			corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
 
 			for i in range(len(rejectedImgPoints)):
 				c = rejectedImgPoints[i][0]
@@ -258,7 +261,6 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 				xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 				ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
 				noID.append( [filename, setup.colony_number, now, frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
-				#noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 			
 			if ids is not None:
 				for i in range(len(ids)):
@@ -268,21 +270,19 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 					xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 					ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
 					raw.append( [filename, setup.colony_number, now, frame_num, int(ids[i]), float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point)] )
-					#raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 			frame_num += 1
-			print(f"processed frame {index}")  
+			print(f"processed frame {frame_num}")  
 		
-		df = pandas.DataFrame(raw)
+		df = pd.DataFrame(raw)
 		df = df.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
-		df.to_csv(todays_folder_path + "/" + filename + '_augraw.csv')
+		df.to_csv(todays_folder_path + "/" + filename + '_raw.csv')
 		print('saved raw csv')
-		#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
-		df2 = pandas.DataFrame(noID)
+		
+		df2 = pd.DataFrame(noID)
 		df2 = df2.rename(columns = {0:'filename', 1:'colony number', 2:'datetime', 3:'frame', 4:'ID', 5:'centroidX', 6:'centroidY', 7:'frontX', 8:'frontY'})
 		df2.to_csv(todays_folder_path + "/" + filename + '_noID.csv')
 		print('saved noID csv')
-		#df2.to_csv('/home/pi/Desktop/BumbleBox/testing/potential_csv.csv', index=False)
 
 		print("Average number of tags found: " + str(len(df.index)/frame_num))
 		tracking_time = time.time() - start
@@ -349,47 +349,16 @@ def main():
 	
 	if setup.track_recorded_videos == True:
 		print('starting to track tags from the saved video!')
-		df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now, hostname, colony_number)
+		df, df2, frame_num = trackTagsFromVid(filepath, todays_folder_path, filename, args.dictionary, args.box_type, now)
 		
 		if setup.interpolate_data == True and df.empty == False:
 			df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
 		
 		if df.empty == False and setup.calculate_behavior_metrics == True:
-			
-			if "speed" in setup.behavior_metrics:
-				try:
-					df = behavioral_metrics.compute_speed(df,args.actual_frames_per_second,4)
-					df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
-					print('just computed speed')
-				except Exception as e:
-					logger.debug("Exception occurred: %s", str(e))
-					
-			if "distance from center" in setup.behavior_metrics:
-				try:
-					df = behavioral_metrics.compute_social_center_distance(df)
-					#should writing to disk be inside or outside function?
-					df.to_csv(todays_folder_path + filename + '_updated.csv', index=False)
-					print('just computed distance from center')
-				except Exception as e:
-					logger.debug("Exception occurred: %s", str(e))
-			
-			if "video averages" in setup.behavior_metrics:
-				try:	
-					video_averages = behavioral_metrics.compute_video_averages(df, todays_folder_path, filename)
-					print('just computed video averages!')
-				except Exception as e:
-					logger.debug("Exception occurred: %s", str(e))
-			
-			if "cumulative averages" in setup.behavior_metrics:
-				try:
-					running_averages = behavioral_metrics.store_cumulative_averages(filename)
-					print('just computed running averages!')
-				except Exception as e:
-					logger.debug("Exception occurred: %s", str(e))
-			
-				if running_averages.empty == True:
-					logger.warning("cumulative averages dataframe returned empty")
-	
+		
+			behavioral_metrics.calculate_behavior_metrics(df, setup.actual_frames_per_second, todays_folder_path, filename)
+			print("Calculating behavior metrics")
+		
 if __name__ == '__main__':
 	
 	main()

@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_0" data-name="0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 518.2807 513.7792">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: .7087px;
+      }
+    </style>
+  </defs>
+  <path class="cls-1" d="m87.3924,513.4249c-47.9657-.0373-86.9987-38.8977-87.0112-86.6251l-.0269-339.8318C.3909,39.2339,39.4436.3936,87.4088.3811l343.4058-.0268c48.0171,0,87.08,38.8666,87.0848,86.6404l.0269,339.7485c.0019,23.1437-9.0544,44.9029-25.4995,61.2707-16.4461,16.3668-38.3123,25.3813-61.5718,25.3822l-343.4573.0287h-.0053Z"/>
+  <g id="CIRCLE">
+    <circle class="cls-1" cx="222.1088" cy="73.2317" r="5.9528"/>
+  </g>
+  <g id="CIRCLE-2" data-name="CIRCLE">
+    <circle class="cls-1" cx="221.9621" cy="122.5903" r="5.9528"/>
+  </g>
+  <g id="CIRCLE-3" data-name="CIRCLE">
+    <circle class="cls-1" cx="293.959" cy="122.6029" r="5.9528"/>
+  </g>
+  <g id="CIRCLE-4" data-name="CIRCLE">
+    <circle class="cls-1" cx="294.107" cy="73.0528" r="5.9528"/>
+  </g>
+  <circle class="cls-1" cx="258.148" cy="256.5322" r="82.9485"/>
+</svg>

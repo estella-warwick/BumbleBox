@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_0" data-name="0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 504.7087 504.7087">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: .7087px;
+      }
+    </style>
+  </defs>
+  <g id="ARC">
+    <path class="cls-1" d="m423.5691,503.9476c44.6186-.0367,80.773-36.1526,80.7853-80.6991"/>
+  </g>
+  <g id="ARC-2" data-name="ARC">
+    <path class="cls-1" d="m.3595,423.6996c.0368,44.5465,36.2111,80.6425,80.8297,80.6547"/>
+  </g>
+  <g id="ARC-3" data-name="ARC">
+    <path class="cls-1" d="m504.3492,81.0091c-.0368-44.5465-36.2111-80.6425-80.8297-80.6547"/>
+  </g>
+  <g id="ARC-4" data-name="ARC">
+    <path class="cls-1" d="m81.1396.7611C36.521.7978.3666,36.9137.3543,81.4602"/>
+  </g>
+  <g id="LINE">
+    <line class="cls-1" x1=".3595" y1="423.6996" x2=".3543" y2="81.4602"/>
+  </g>
+  <g id="LINE-2" data-name="LINE">
+    <line class="cls-1" x1=".3595" y1="423.6996" x2=".3543" y2="81.4602"/>
+  </g>
+  <g id="LINE-3" data-name="LINE">
+    <line class="cls-1" x1="81.1892" y1="504.3543" x2="423.5691" y2="503.9476"/>
+  </g>
+  <g id="LINE-4" data-name="LINE">
+    <line class="cls-1" x1="504.3492" y1="81.0091" x2="504.3543" y2="423.2485"/>
+  </g>
+  <g id="LINE-5" data-name="LINE">
+    <line class="cls-1" x1="81.1396" y1=".7611" x2="423.5195" y2=".3543"/>
+  </g>
+</svg>

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="_0" data-name="0" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375.0187 735.1087">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: .7087px;
+      }
+    </style>
+  </defs>
+  <g id="LWPOLYLINE">
+    <polygon class="cls-1" points="127.4925 734.7543 127.4925 673.8541 127.515 673.8541 127.515 673.849 127.515 614.9229 246.3643 614.9229 246.3643 647.9341 246.2923 647.9341 246.2923 682.1577 246.2946 682.1577 246.2946 705.5406 246.287 705.5406 246.287 734.7543 374.6643 734.7543 374.6644 .3543 .3543 .3543 .3543 734.7543 127.4925 734.7543"/>
+  </g>
+</svg>

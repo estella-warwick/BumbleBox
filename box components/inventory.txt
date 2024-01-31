@@ -1,0 +1,36 @@
+Laser cut components for 1/8" acrylic
+The component files are duplicated as svg, pdf, and dxf files for ease of use by whoever is cutting them. Some laser cutters work better with a particular kind of file format. 
+
+1x clear_top - clear acrylic
+1x diffuser_top - clear acrylic
+1x opaque_top - white acrylic
+1x access_door_wall - white acrylic
+1x entrance_wall - white acrylic
+2x vent_walls - white acrylic
+1x wall - white acrylic
+1x feeder_base - white acrylic
+
+The entrance wall file and the wall file are interchangeable depending on whether the entrance
+Part is being used or not (ie whether the bees are going to be let out of the nest or not). I recommend cutting both so you have both options.
+
+The diffuser_top file has 2 different laser path intensities - one to cut the top out, and one to score it in a checkerboard pattern. Each laser cutter is different, so it is hard to give direct settings. For the scoring paths of the diffuser_top file, we want a cut probably 1/4 - 1/3 of the way through the clear 1/8" acrylic. We want to avoid warping. For those getting these cut commercially, you should let the people know that about this file.
+
+
+3D printed components
+
+All parts should be printed with a 0.4mm nozzle at 0.15mm layer height and automatic supports.
+For each box we need these number of printed components:
+
+1x base_insert.stl
+1x base.stl
+4x bottom_wall_connector.3mf
+1x camera_mount.3mf
+1x custom_box_entrance.3mf
+3x entrance_inner_door.3mf
+1x imaging_top_side_innie.3mf
+1x imaging_top_side_outie.3mf
+1x latch_key.stl
+2x latch.stl
+4x box_foot.3mf
+3x outer_door.3mf
+4x top_wall_connector.3mf

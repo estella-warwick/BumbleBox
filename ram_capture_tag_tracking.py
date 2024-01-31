@@ -19,8 +19,10 @@ import behavioral_metrics
 import setup
 import logging
 from data_cleaning import interpolate
+import pwd
 
-logging.basicConfig(filename='/home/pi/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
+username = pwd.getpwuid(os.getuid())[0]
+logging.basicConfig(filename=f'/home/{username}/Desktop/BumbleBox/logs/log.log',encoding='utf-8',format='%(filename)s %(asctime)s: %(message)s', filemode='a', level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
 
@@ -110,8 +112,9 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 		if not hasattr(cv2.aruco, tag_dictionary):
 			raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
 		tag_dictionary = getattr(cv2.aruco, tag_dictionary)
-	aruco_dict = aruco.Dictionary_get(tag_dictionary) 
-	parameters = aruco.DetectorParameters_create()
+	tag_dictionary = aruco.getPredefinedDictionary(tag_dictionary) 
+	parameters = aruco.DetectorParameters()
+	detector = aruco.ArucoDetector(tag_dictionary, parameters)
 	
 	if box_type=='custom':
 		parameters.minMarkerPerimeterRate=0.03
@@ -164,7 +167,7 @@ def trackTagsFromRAM(filename, todays_folder_path, frames_list, tag_dictionary, 
 			print('converting to grayscale didnt work...')
 			continue
 		
-		corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
+		corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
 		
 		#for troubleshooting
 		#frame_markers = aruco.drawDetectedMarkers(gray.copy(), corners, ids)
@@ -280,7 +283,7 @@ def main():
 	df, df2, frame_num = trackTagsFromRAM(filename, todays_folder_path, frames_list, args.dictionary, args.box_type, now, hostname, colony_number)
 	
 	if setup.interpolate_data == True and df.empty == False:
-            df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
+		df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
 	
 	if df.empty == False and setup.calculate_behavior_metrics == True:
 		
