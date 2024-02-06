@@ -5,7 +5,7 @@
 https://github.com/Crall-Lab/BumbleBox/assets/102829182/884fe794-ba71-4942-8e86-25422a294a5b
 
 ## Software Installation and Setup
-Installed the following hardware:
+Installed using the following hardware:
 - Rasbperry Pi 4b, 8GB RAM
 - 32GB SanDisk Ultra SD card
 - Monitor with HDMI
@@ -33,7 +33,7 @@ e. `pip install scikit-video --break-system-packages`
 
 f. `pip install dask –break-system-packages`
 
-   
+7. 
 
  
 
