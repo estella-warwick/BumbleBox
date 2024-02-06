@@ -21,12 +21,12 @@ Installed the following hardware:
 
 6. We're now going to install the required software to use the BumbleBox code. For each of the following commands, type the command (or copy and paste) into the terminal window, and then press enter. Once you enter the command, the computer may take some time to download the required software, and will show a lot of text on the screen. Wait for each command to finish running before attempting to run the next command.
 
-  a. `pip3 install opencv-contrib-python –break-system-packages` 
-  b. `pip install pandas --break-system-packages`
-  c. `pip install scipy --break-system-packages`
-  d. `pip install python-crontab --break-system-packages`
-  e. `pip install scikit-video --break-system-packages`
-  f. `pip install dask –break-system-packages`
+a. `pip3 install opencv-contrib-python –break-system-packages` 
+b. `pip install pandas --break-system-packages`
+c. `pip install scipy --break-system-packages`
+d. `pip install python-crontab --break-system-packages`
+e. `pip install scikit-video --break-system-packages`
+f. `pip install dask –break-system-packages`
 
    
 
