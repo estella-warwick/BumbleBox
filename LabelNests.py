@@ -15,12 +15,12 @@ import json
 import cv2
 import numpy as np
 import pandas as pd
-import skvideo.io
+#import skvideo.io
 #import io
-from PIL import Image as pil_im
-import tkinter as tk
-from tkinter import filedialog
-import setup
+#from PIL import Image as pil_im
+#import tkinter as tk
+#from tkinter import filedialog
+#import setup
 
 '''
 def count_frames(video):
