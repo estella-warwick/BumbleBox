@@ -22,6 +22,7 @@ import tkinter as tk
 from tkinter import filedialog
 import setup
 
+'''
 def count_frames(video):
     #Finds # of frames in a video - this will allow us to store the vids data for each frame in order to compress them into a single picture!
     #cv2.PROP_FRAME_COUNT seems not to work for these mjpegs, will explore
@@ -91,10 +92,10 @@ def vids2medianimg(directory):
 
     #the below code is being blocked out to try to get tkinter dialoging to work
 
-    #print('''Hi! I'm going to turn your colony video into an altered picture so that you can label it more easily (wow!). 
+    #print(Hi! I'm going to turn your colony video into an altered picture so that you can label it more easily (wow!). 
     #If you want to stitch multiple together, I can do that too! Just make sure you've copied your colony video(s) into the 
     #\"For Labelling\" folder, which is inside the Videos folder. FYI the video processing might take a bit, so be patient! 
-    #See you on the other side!''')
+    #See you on the other side!)
 
     #if not os.path.isdir(dir + "/Videos/For Labelling"):
     #    subprocess.run(['mkdir', dir + "/Videos/For Labelling"]) #make a directory called LabeledNest inside dir not not already made
@@ -176,6 +177,7 @@ def vids2medianimg(directory):
         print(img_path + ' is saved!')
     return print('Done creating colony nest images! Check for them in ' + directory )
 
+    '''
 def labelNest(directory):
     #with this code, have set up my own labelmerc file in the BumbleBox folder with config settings.
     #also went in and changed the __init__ file in the config folder, hashing out this code: (in order to have labels with repeating words)
@@ -187,7 +189,7 @@ def labelNest(directory):
     print('Running Labelme now... I have preloaded the labels to use for these images. Of course, you dont need to use labels that dont apply to your circumstances. Use the designated shapes for each label that is provided. For example, in order to draw the perimeter of the nest, Ill use the polygon tool, because the label says Nest perimeter (polygon). Right click to choose what types of shapes you want to use!')
     print(directory)
     print(type(directory))
-    subprocess.run(['labelme', setup.bumblebox_dir, '--config', setup.bumblebox_dir + '/labelmerc', '--output', directory + '/Labelled Nest Files' ])
+    subprocess.run(['labelme', setup.bumblebox_dir, '--config', '/Users/aec/Desktop/BumbleBox' + '/labelmerc', '--output', directory + '/Labelled Nest Files' ])
     #subprocess.run(['labelme', dir, '--labels', 'Arena perimeter (polygon),Nest perimeter (polygon),Eggs perimeter (polygons),Eggs (points),Larvae (circles),Pupae (circles),Queen larva (circles),Queen pupae,Wax pots (circles),full nectar pot (circles),empty wax pots (circles),pollen balls (circles), nectar source (circle)'])
 
     #subprocess.run(['labelme', dir, '--labels', 'nest perimeter,eggs (perimeter),eggs (circles),larvae,pupae,queen cell,wax pot,full nectar pot,empty wax pot,pollen ball, nectar source',
@@ -196,7 +198,8 @@ def labelNest(directory):
     print('huh... is this on?')
     jsons = sorted(glob.glob(os.path.join(directory + '/Labelled Nest Files', '*.json')))
     if len(jsons) < 1:
-        print('''Looks like you didn't save your work into a .json file inside Labelme, or you didnt save it to the LabelledNestFiles.\n''')
+        print('''Looks like you didn't save your work into a .json file inside Labelme, or you didnt save it to the Labelled Nest Files.\n''')
+        print(directory + '/Labelled Nest Files')
     for file in jsons: #to do: check whether a CSV already exists? Or just overwrite the old one, depending on how long it takes?
         with open(file.strip(".json") + ".csv", 'w') as f:
             writer = csv.writer(f)
@@ -233,10 +236,13 @@ def labelNest(directory):
 "------------------------------------------------------"
 
 def main(argv):
-    
-    if not os.path.exists(setup.data_folder_path + '/Nest Images/Labelled Nest Files'):
-        os.makedirs(setup.data_folder_path + '/Nest Images/Labelled Nest Files')
-    directory = setup.data_folder_path + '/Nest Images'
+
+    directory = input("Please provide the folder with your nest images, and please make sure its on the computer that you're working on, and not a drive.\nInside that folder we'll make a folder called Labelled Nest Files, where we will store the data from our nest labelling\n\nNest data folder path:")
+    if not os.path.exists(directory + '/Labelled Nest Files'):
+        os.makedirs(directory + '/Labelled Nest Files')
+    #if not os.path.exists('/Users/aec/Desktop/2023 bombus workshop pngs' + '/Nest Images/Labelled Nest Files'):
+        #os.makedirs('/Users/aec/Desktop/2023 bombus workshop pngs' + '/Nest Images/Labelled Nest Files')
+    #directory = directory + '/Nest Images'
     
     
     #vids2medianimg(directory)
