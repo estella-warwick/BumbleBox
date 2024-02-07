@@ -189,7 +189,11 @@ def labelNest(directory):
     print('Running Labelme now... I have preloaded the labels to use for these images. Of course, you dont need to use labels that dont apply to your circumstances. Use the designated shapes for each label that is provided. For example, in order to draw the perimeter of the nest, Ill use the polygon tool, because the label says Nest perimeter (polygon). Right click to choose what types of shapes you want to use!')
     print(directory)
     print(type(directory))
-    subprocess.run(['labelme', setup.bumblebox_dir, '--config', '/Users/aec/Desktop/BumbleBox' + '/labelmerc', '--output', directory + '/Labelled Nest Files' ])
+
+    bumblebox_dir = os.path.dirname(os.path.realpath(__file__))
+    print(bumblebox_dir)
+    
+    subprocess.run(['labelme', bumblebox_dir, '--config', bumblebox_dir + '/labelmerc', '--output', directory + '/Labelled Nest Files' ])
     #subprocess.run(['labelme', dir, '--labels', 'Arena perimeter (polygon),Nest perimeter (polygon),Eggs perimeter (polygons),Eggs (points),Larvae (circles),Pupae (circles),Queen larva (circles),Queen pupae,Wax pots (circles),full nectar pot (circles),empty wax pots (circles),pollen balls (circles), nectar source (circle)'])
 
     #subprocess.run(['labelme', dir, '--labels', 'nest perimeter,eggs (perimeter),eggs (circles),larvae,pupae,queen cell,wax pot,full nectar pot,empty wax pot,pollen ball, nectar source',
@@ -236,7 +240,7 @@ def labelNest(directory):
 "------------------------------------------------------"
 
 def main(argv):
-
+    
     directory = input("Please provide the folder with your nest images, and please make sure its on the computer that you're working on, and not a drive.\nInside that folder we'll make a folder called Labelled Nest Files, where we will store the data from our nest labelling\n\nNest data folder path:")
     if not os.path.exists(directory + '/Labelled Nest Files'):
         os.makedirs(directory + '/Labelled Nest Files')
