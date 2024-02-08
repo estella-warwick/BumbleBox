@@ -5,6 +5,9 @@
 https://github.com/Crall-Lab/BumbleBox/assets/102829182/884fe794-ba71-4942-8e86-25422a294a5b
 
 ## Software Installation and Setup
+
+### Raspberry Pi Install
+
 Installed using the following hardware:
 - Rasbperry Pi 4b, 8GB RAM
 - 32GB SanDisk Ultra SD card
@@ -33,7 +36,7 @@ e. `pip install scikit-video --break-system-packages`
 
 f. `pip install dask –break-system-packages`
 
-7. 
+7. Download the BumbleBox code onto your Raspberry Pi. I download the folder onto the Pi's Desktop so I can access it easily. To do this, click 
 
  
 
