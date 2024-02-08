@@ -50,5 +50,4 @@ pip install dask –break-system-packages`
 
 7. Download the BumbleBox code onto your Raspberry Pi.  To download the code, click the green 'Code' button on the main BumbleBox page and then press the 'Download Zip' button. After downloading the folder onto the Pi, I put the folder onto the Pi's Desktop so I can access it easily.
 
-<img width="1191" alt="Screenshot 2024-02-08 at 11 21 01 AM" src="https://github.com/Crall-Lab/BumbleBox/assets/102829182/40a68a17-ba1c-4cd6-a9e4-4caf1aec3c2f">
-
+![download-zip-example-github](https://github.com/Crall-Lab/BumbleBox/assets/102829182/961ca94d-ce7b-4b3b-a8c8-8560dd3a271c)
