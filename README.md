@@ -48,6 +48,6 @@ pip install scikit-video --break-system-packages
 pip install dask –break-system-packages`
 ```
 
-7. Download the BumbleBox code onto your Raspberry Pi.  To download the code, click the green 'Code' button on the main BumbleBox page and then press the 'Download Zip' button. After downloading the folder onto the Pi, I put the folder onto the Pi's Desktop so I can access it easily.
+7. Download the BumbleBox code onto your Raspberry Pi.  To download the code, click the green 'Code' button on the main BumbleBox page and then press the 'Download Zip' button. After downloading the folder onto the Pi and unzipping it, you might want to put the folder onto the Pi's Desktop so you can access it easily.
 
 ![download-zip-example-github](https://github.com/Crall-Lab/BumbleBox/assets/102829182/961ca94d-ce7b-4b3b-a8c8-8560dd3a271c)
