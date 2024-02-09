@@ -25,27 +25,27 @@ Installed using the following hardware:
 5. We're now going to install the required software to use the BumbleBox code. For each of the following commands, type the command (or copy and paste) into the terminal window, and then press enter. Once you enter the command, the computer may take some time to download the required software, and will show a lot of text on the screen. Wait for each command to finish running before attempting to run the next command.
 
 ```bash
-pip3 install opencv-contrib-python –break-system-packages
+pip3 install opencv-contrib-python --break-system-packages
 ```
 
 ```bash
-pip install pandas --break-system-packages
+pip3 install pandas --break-system-packages
 ```
 
 ```bash
-pip install scipy --break-system-packages
+pip3 install scipy --break-system-packages
 ```
 
 ```bash
-pip install python-crontab --break-system-packages
+pip3 install python-crontab --break-system-packages
 ```
 
 ```bash
-pip install scikit-video --break-system-packages
+pip3 install scikit-video --break-system-packages
 ```
 
 ```bash
-pip install dask –break-system-packages`
+pip3 install dask –break-system-packages`
 ```
 Amazing! You have now downloaded all the necessary packages to run the BumbleBox on the Raspberry Pi.
 
