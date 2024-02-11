@@ -4,7 +4,7 @@
 
 https://github.com/Crall-Lab/BumbleBox/assets/102829182/df6746e8-be8d-474d-97e5-7dcfe8cf2d3f
 
-<img width="1920" alt="image" src="https://github.com/Crall-Lab/BumbleBox/assets/102829182/735a1f48-ad84-4817-b99b-2c6833da067e">
+https://github.com/Crall-Lab/BumbleBox/assets/102829182/92d87284-6381-4c2a-ad78-1d7bee3951b9
 
 
 ## Software Installation and Setup
