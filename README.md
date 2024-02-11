@@ -4,6 +4,8 @@
 
 https://github.com/Crall-Lab/BumbleBox/assets/102829182/884fe794-ba71-4942-8e86-25422a294a5b
 
+https://github.com/Crall-Lab/BumbleBox/assets/102829182/df6746e8-be8d-474d-97e5-7dcfe8cf2d3f
+
 ## Software Installation and Setup
 
 ### Raspberry Pi Install
