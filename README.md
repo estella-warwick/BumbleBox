@@ -2,9 +2,10 @@
 
 ![MastersFigure1final_lowres](https://github.com/Crall-Lab/BumbleBox/assets/102829182/f4c060cb-423d-47ce-b37c-edd3d5f6d22b)
 
-https://github.com/Crall-Lab/BumbleBox/assets/102829182/884fe794-ba71-4942-8e86-25422a294a5b
-
 https://github.com/Crall-Lab/BumbleBox/assets/102829182/df6746e8-be8d-474d-97e5-7dcfe8cf2d3f
+
+<img width="1920" alt="image" src="https://github.com/Crall-Lab/BumbleBox/assets/102829182/735a1f48-ad84-4817-b99b-2c6833da067e">
+
 
 ## Software Installation and Setup
 
