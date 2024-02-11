@@ -80,7 +80,7 @@ Your terminal should now look something like this:
 
 ![virtual-env-tutorial-pic](https://github.com/Crall-Lab/BumbleBox/assets/102829182/838d461d-6928-4cc8-b6d2-368ecc983b3f)
 
-Now we're ready to install labelme!
+Now we're ready to install labelme! Run the following command in the same terminal window:
 
 ```bash
 pip3 install labelme
