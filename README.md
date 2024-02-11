@@ -55,3 +55,16 @@ Amazing! You have now downloaded all the necessary packages to run the BumbleBox
 6. Next, download the BumbleBox code onto your Raspberry Pi.  To download the code, click the green 'Code' button on the main BumbleBox page and then press the 'Download Zip' button. After downloading the folder onto the Pi and unzipping it, you might want to put the folder onto the Pi's Desktop so you can access it easily.
 
 ![download-zip-example-github](https://github.com/Crall-Lab/BumbleBox/assets/102829182/961ca94d-ce7b-4b3b-a8c8-8560dd3a271c)
+
+
+## Install labelling software (on a separate computer, not the Raspberry Pi - install instructions tested for Mac and Linux computers so far)
+
+1. Install BumbleBox code onto your computer, in the same manner as above
+
+2. Open a terminal window on your computer (try typing 'terminal' into your computer search bar to find it, or go to your applications page and search for the terminal app)
+
+3. Type the following command to create what is called a virtual environment, which basically creates an isolated place on your computer to download software so that it won't potentially cause conflicts with other software on your computer. The virtual environment we're creating is called labelme, because we will be downloading labelme software.
+```bash```
+python3 -m venv labelme
+```
+
