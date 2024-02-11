@@ -6,6 +6,9 @@ https://github.com/Crall-Lab/BumbleBox/assets/102829182/df6746e8-be8d-474d-97e5-
 
 https://github.com/Crall-Lab/BumbleBox/assets/102829182/92d87284-6381-4c2a-ad78-1d7bee3951b9
 
+## About the BumbleBox
+
+xyz
 
 ## Software Installation and Setup
 
