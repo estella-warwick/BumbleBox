@@ -63,8 +63,20 @@ Amazing! You have now downloaded all the necessary packages to run the BumbleBox
 
 2. Open a terminal window on your computer (try typing 'terminal' into your computer search bar to find it, or go to your applications page and search for the terminal app)
 
-3. Type the following command to create what is called a virtual environment, which basically creates an isolated place on your computer to download software so that it won't potentially cause conflicts with other software on your computer. The virtual environment we're creating is called labelme, because we will be downloading labelme software.
-```bash```
+3. Type the following command to create what is called a virtual environment, which basically creates an isolated place on your computer to download software so that it won't potentially cause conflicts with other software on your computer. The virtual environment we're creating is called labelme, because we will be downloading software called labelme.
+
+```bash
 python3 -m venv labelme
 ```
 
+4. Now we have to 'go into' the virtual environment that we've created, using this command:
+
+```bash
+source labelme/bin/activate
+```
+
+Your terminal should now look something like this:
+
+![virtual-env-tutorial-pic](https://github.com/Crall-Lab/BumbleBox/assets/102829182/838d461d-6928-4cc8-b6d2-368ecc983b3f)
+
+Now we're ready to install labelme!
