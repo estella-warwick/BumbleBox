@@ -10,6 +10,11 @@ https://github.com/Crall-Lab/BumbleBox/assets/102829182/92d87284-6381-4c2a-ad78-
 
 xyz
 
+## BumbleBox Construction Instructions
+
+See building instructions in a google document here:
+https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/edit?usp=sharing
+
 ## Software Installation and Setup
 
 ### Raspberry Pi Install
