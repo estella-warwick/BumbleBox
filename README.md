@@ -60,7 +60,7 @@ pip3 install scikit-video --break-system-packages
 ```
 
 ```bash
-pip3 install dask –break-system-packages`
+pip3 install dask --break-system-packages
 ```
 Amazing! You have now downloaded all the necessary packages to run the BumbleBox on the Raspberry Pi.
 
