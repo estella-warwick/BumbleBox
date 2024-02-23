@@ -1,3 +1,13 @@
+#TEMPORARY! add these lines below line 29 in start_automated_reording.py
+
+```bash
+job2 = cron.new(command=f'sudo mkdir -p /mnt/bumblebox/data')
+job2.every_reboot()
+cron.write()
+```
+
+and remove 'data' from line 26
+
 # The BumbleBox: an open-source platform for collecting and quantifying behavior in bumblebees
 
 ![MastersFigure1final_lowres](https://github.com/Crall-Lab/BumbleBox/assets/102829182/f4c060cb-423d-47ce-b37c-edd3d5f6d22b)
