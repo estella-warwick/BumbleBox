@@ -1,4 +1,4 @@
-import numpy as np
+#import numpy as np
 import cv2
 #import skvideo.io
 import os
@@ -7,7 +7,7 @@ import dask.array as da
 import glob
 import random
 import datetime
-from record_video import create_todays_folder
+from record_video import create_todays_folder #change this so that this function sits in this script, doesnt need to be imported from record_video
 import setup
 import socket
 import argparse
