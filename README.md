@@ -14,7 +14,7 @@ xyz
 
 ## BumbleBox Construction Instructions
 
-See building instructions in a google document [here](https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/edit?usp=sharing):
+See building instructions in a google document [here](https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/edit?usp=sharing)
 
 
 
