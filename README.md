@@ -19,8 +19,7 @@ https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/
 
 
 
-## Software Installation and Setup
-
+## Software Installation and Setup (See instruction videos [here]([url](https://www.youtube.com/channel/UCykbaZYtgNcFspMfKnfSwYA))
 ### Raspberry Pi Install
 
 Installed using the following hardware:
