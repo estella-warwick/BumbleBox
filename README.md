@@ -14,12 +14,15 @@ xyz
 
 ## BumbleBox Construction Instructions
 
-See building instructions in a google document here:
-https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/edit?usp=sharing
+See building instructions in a google document [here](https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/edit?usp=sharing):
 
 
 
-## Software Installation and Setup (See instruction videos [here](https://www.youtube.com/channel/UCykbaZYtgNcFspMfKnfSwYA))
+
+## Software Installation and Setup
+
+See instruction videos [here](https://www.youtube.com/channel/UCykbaZYtgNcFspMfKnfSwYA)
+
 ### Raspberry Pi Install
 
 Installed using the following hardware:
