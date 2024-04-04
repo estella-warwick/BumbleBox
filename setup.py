@@ -91,7 +91,7 @@ contact_distance = 2.0 #in centimeters
 
 if box_type == 'custom':
 	pixel_contact_distance = 206.1
-	
+	moving_threshold = 3.16 #moving 3.16 pixels / frame seems to be the cutoff between noise/non-moving bee and a moving bee (see bimodal distribution of log10 of the speed scores) 
 	#add pcd for koppert box
 
 
