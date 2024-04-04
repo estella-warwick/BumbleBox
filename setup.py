@@ -85,7 +85,7 @@ max_seconds_gap = 3
 
 
 calculate_behavior_metrics = True
-behavior_metrics = ['speed','distance from center', 'pairwise distance', 'contacts', 'video averages']
+behavior_metrics = ['speed', 'activity', 'distance from center', 'pairwise distance', 'contacts', 'video averages']
 contact_distance = 2.0 #in centimeters
 
 
