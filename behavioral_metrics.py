@@ -42,8 +42,30 @@ def compute_speed(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int, moving_
     df_sorted.to_csv(todays_folder_path + "/" + filename + '_updated.csv', index=False)
     return df_sorted
     
-    
+def compute_activity(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int, moving_threshold: float, todays_folder_path: str, filename: str) -> pd.DataFrame:
 
+    speed_cutoff_frames = fps*speed_cutoff_seconds
+    # Sorting by ID and frame ensures that we compare positions of the same bee across consecutive frames
+    df_sorted = df.sort_values(by=['ID', 'frame'])
+   
+    # Compute the difference between consecutive rows for centroidX and centroidY
+    df_sorted['deltaX'] = df_sorted.groupby('ID')['centroidX'].diff()
+    df_sorted['deltaY'] = df_sorted.groupby('ID')['centroidY'].diff()
+    
+    df_sorted['elapsed frames'] = df_sorted.groupby('ID')['frame'].diff()
+    # Compute the Euclidean distance, which gives speed (assuming frame rate is constant)
+    sub_df = df_sorted[ df_sorted['elapsed frames'] < speed_cutoff_frames ]
+    sub_df['activity'] = np.sqrt(sub_df['deltaX']**2 + sub_df['deltaY']**2) #Calculating speed here - we threshold for activity below
+
+    sub_df.loc[sub_df['activity'] < moving_threshold, 'activity'] = 0 
+    sub_df.loc[sub_df['activity'] <= moving_threshold, 'activity'] = 1
+	
+    df_sorted.loc[:, 'activity'] = sub_df.loc[:, 'activity']
+    # Drop temporary columns used for computations
+    df_sorted.drop(columns=['deltaX', 'deltaY'], inplace=True)
+    df_sorted.to_csv(todays_folder_path + "/" + filename + '_updated.csv', index=False)
+    return df_sorted
+	
 def compute_social_center_distance(df: pd.DataFrame, todays_folder_path: str, filename: str) -> pd.DataFrame:
     # Compute the social center for each frame
     social_centers = df.groupby('frame')[['centroidX', 'centroidY']].mean()
@@ -331,7 +353,11 @@ def calculate_behavior_metrics(df, actual_frames_per_second, moving_threshold, t
         #    print("Exception occurred: %s", str(e))
         #    logger.debug("Exception occurred: %s", str(e))
 				
-                
+    if "activity" in setup.behavior_metrics:
+        print("Trying activity")
+	df = compute_activity(df,actual_frames_per_second,4, moving_threshold, todays_folder_path, filename)
+	print("Just computed activity")
+	    
     if "distance from center" in setup.behavior_metrics:
         print("Trying distance from center")
         try:
