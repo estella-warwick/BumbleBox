@@ -15,11 +15,11 @@ from data_cleaning import interpolate
 folder_path = '/mnt/bumblebox/data' #Otherwise it should be set to None
 
 logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
+logger.setLevel(logging.INFO)
 logger.debug("importing behavioral metrics")
 
-def compute_speed(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int, todays_folder_path: str, filename: str) -> pd.DataFrame:
-    
+def compute_speed(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int, moving_threshold: float, todays_folder_path: str, filename: str) -> pd.DataFrame:
+ 
     speed_cutoff_frames = fps*speed_cutoff_seconds
     # Sorting by ID and frame ensures that we compare positions of the same bee across consecutive frames
     df_sorted = df.sort_values(by=['ID', 'frame'])
@@ -32,6 +32,10 @@ def compute_speed(df: pd.DataFrame, fps: int, speed_cutoff_seconds: int, todays_
     # Compute the Euclidean distance, which gives speed (assuming frame rate is constant)
     sub_df = df_sorted[ df_sorted['elapsed frames'] < speed_cutoff_frames ]
     sub_df['speed'] = np.sqrt(sub_df['deltaX']**2 + sub_df['deltaY']**2)
+
+    #only calculate speed when moving, otherwise mark as NAN
+    sub_df.loc[sub_df['speed'] < 3.16, 'speed'] = np.nan
+	
     df_sorted.loc[:, 'speed'] = sub_df.loc[:, 'speed']
     # Drop temporary columns used for computations
     df_sorted.drop(columns=['deltaX', 'deltaY'], inplace=True)
@@ -306,7 +310,7 @@ def create_todays_folder(dirpath):
         
         
 
-def calculate_behavior_metrics(df, actual_frames_per_second, todays_folder_path, filename): #accept a path to a file or a path to a dataframe
+def calculate_behavior_metrics(df, actual_frames_per_second, moving_threshold, todays_folder_path, filename): #accept a path to a file or a path to a dataframe
     
     print("starting calculations")
     #not finished!
@@ -321,7 +325,7 @@ def calculate_behavior_metrics(df, actual_frames_per_second, todays_folder_path,
     if "speed" in setup.behavior_metrics:
         print("Trying speed")
         #try:
-        df = compute_speed(df,actual_frames_per_second,4, todays_folder_path, filename)
+        df = compute_speed(df,actual_frames_per_second,4, moving_threshold, todays_folder_path, filename)
         print('just computed speed')
         #except Exception as e:
         #    print("Exception occurred: %s", str(e))
@@ -411,4 +415,4 @@ if __name__ == '__main__':
         ''' check whether files have been interpolated yet or not '''
         if setup.interpolate_data == True:
             df = interpolate(df, setup.max_seconds_gap, setup.actual_frames_per_second)
-        calculate_behavior_metrics(df,setup.actual_frames_per_second,head,filename)
+        calculate_behavior_metrics(df,setup.actual_frames_per_second,setup.moving_threshold,head,filename)
