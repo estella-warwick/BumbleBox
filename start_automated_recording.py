@@ -18,22 +18,28 @@ username = pwd.getpwuid(os.getuid())[0]
 '''find the path to the record_video file on the computer'''
 record_video_path = find_file('record_video.py', f'/home/{username}')
 
-'''make sure the computer recognizes the thumb drive or storage device when the computer turns on, and name it bumblebox'''
+'''make the /mnt/bumblebox/data folder if it doesnt exist yet'''
 cron = CronTab(user=f'{username}')
 cron.remove_all()
+job0 = cron.new(command=f'sudo mkdir -p /mnt/bumblebox/data')
+job0.every_reboot()
+cron.write()
+
+'''make sure the computer recognizes the thumb drive or storage device when the computer turns on, and name it bumblebox'''
+
 job1 = cron.new(command=f'sudo mount /dev/sda1 /mnt/bumblebox/data -o umask=000')
 job1.every_reboot()
 cron.write()
 
 '''make sure that we can write to this storage drive and to folders that we create on it'''
-job1 = cron.new(command=f'sudo chmod -R ugo+rwx /mnt/bumblebox/data')
-job1.every_reboot()
+job2 = cron.new(command=f'sudo chmod -R ugo+rwx /mnt/bumblebox/data')
+job2.every_reboot()
 cron.write()
     
 
 '''schedule the record video script to run every X minutes based on the recording_frequency variable in setup.py'''
-job2 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} --box_type {setup.box_type} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/{username}/Desktop/output.txt 2>&1')
-job2.minute.every(setup.recording_frequency)
+job3 = cron.new(command=f'python3 {record_video_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -q {setup.quality} -fps {setup.frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} --box_type {setup.box_type} -cd {setup.codec} -tf {setup.tuning_file} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/{username}/Desktop/output.txt 2>&1')
+job3.minute.every(setup.recording_frequency)
 cron.write()
 
 '''if tag tracking is set to true, have tag tracking take place at an interval set by the tag_tracking_frequency variable in setup.py - if video recording and tag tracking fall on the same minute, video recording will override the tag tracking, and a video will be saved'''
@@ -71,8 +77,8 @@ if setup.tag_tracking == True:
     tag_tracking_without_recording_minutes = [ minute for minute in tag_tracking_minutes if minute not in recording_minutes]
 
 
-    job3 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} -afps {setup.actual_frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} --box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/{username}/Desktop/output.txt 2>&1')
-    job3.minute.on(tag_tracking_without_recording_minutes[0])
+    job4 = cron.new(command=f'python3 {tag_tracking_path} --data_folder_path {setup.data_folder_path} -t {setup.recording_time} -fps {setup.frames_per_second} -afps {setup.actual_frames_per_second} --shutter {setup.shutter_speed} -w {setup.width} -ht {setup.height} -d {setup.tag_dictionary} -tf {setup.tuning_file} --box_type {setup.box_type} -nr {setup.noise_reduction_mode} -z {setup.recording_digital_zoom} > /home/{username}/Desktop/output.txt 2>&1')
+    job4.minute.on(tag_tracking_without_recording_minutes[0])
     for minute in tag_tracking_without_recording_minutes[1:]:
         job3.minute.also.on(minute)
 
@@ -81,8 +87,8 @@ if setup.tag_tracking == True:
 if setup.create_composite_nest_images == True:
     
     generate_nest_images_path = find_file('generate_nest_images.py', f'/home/{username}')
-    job4 = cron.new(command=f'python3 {generate_nest_images_path} --data_folder_path {setup.data_folder_path} --number_of_images {setup.number_of_images}')
-    job4.setall("0 23 * * *")
+    job5 = cron.new(command=f'python3 {generate_nest_images_path} --data_folder_path {setup.data_folder_path} --number_of_images {setup.number_of_images}')
+    job5.setall("0 23 * * *")
     cron.write()
 
 
