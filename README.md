@@ -35,7 +35,7 @@ Installed using the following hardware:
    
 2. Put the SD card into the Pi's SD card slot, hook the Pi up to a monitor via a micro-HDMI to HDMI cable, and power the Pi on - you should see the operating system load on the screen
    
-3. You will need to create a username and password for the Raspberry Pi - Ex. 'pi' and 'bombus'
+3. You will need to create a username and password for the Raspberry Pi - IMPORTANT: use 'pi' for the username, and some password you'll remember
    
 4. Open a terminal window (look for a button on the top left of the screen that looks like a black box with a blue top and white text inside it showing '>_')
 
