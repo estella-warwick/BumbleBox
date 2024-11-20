@@ -77,7 +77,10 @@ Amazing! You have now downloaded all the necessary packages to run the BumbleBox
 ![download-zip-example-github](https://github.com/Crall-Lab/BumbleBox/assets/102829182/961ca94d-ce7b-4b3b-a8c8-8560dd3a271c)
 
 
-### Install labelling software (on a separate computer, not the Raspberry Pi - install instructions tested for Mac and Linux computers so far)
+
+
+
+### Install labelling software (on a separate computer, not the Raspberry Pi - install instructions tested for Mac and Linux computers so far) - this is included in the software and setup section, but this will only be used after data is collected, so it does not need to be completed prior to using the BumbleBox.
 
 #### The BumbleBox generates nest images daily that can be labelled in order to track different nest components, which can be useful for a variety of interesting research questions. To do this, we need to install the BumbleBox code and the labelling software we will use on a separate computer. 
 
