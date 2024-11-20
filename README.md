@@ -11,6 +11,9 @@ https://github.com/Crall-Lab/BumbleBox/assets/102829182/92d87284-6381-4c2a-ad78-
 xyz
 
 
+## Animations of BumbleBox construction
+
+Youtube link to the animations playlist here: [here](https://www.youtube.com/playlist?list=PLHFFPE_W56kkKZQcCbZdQC42oRvphlQpn)
 
 ## BumbleBox Construction Instructions
 
