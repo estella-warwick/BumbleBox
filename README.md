@@ -77,7 +77,7 @@ Amazing! You have now downloaded all the necessary packages to run the BumbleBox
 ![download-zip-example-github](https://github.com/Crall-Lab/BumbleBox/assets/102829182/961ca94d-ce7b-4b3b-a8c8-8560dd3a271c)
 
 
-The action of every agent <br /> into the world <br /> starts <br /> from their physical selves. <br />
+The action of every agent <br /><br /> into the world <br /> starts <br /> from their physical selves. <br />
 
 
 ### Install labelling software (on a separate computer, not the Raspberry Pi - install instructions tested for Mac and Linux computers so far) - this is included in the software and setup section, but this will only be used after data is collected, so it does not need to be completed prior to using the BumbleBox.
