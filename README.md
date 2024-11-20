@@ -9,18 +9,16 @@ https://github.com/Crall-Lab/BumbleBox/assets/102829182/92d87284-6381-4c2a-ad78-
 ## About the BumbleBox
 
 xyz
-
+<br /><br />
 
 ## Animations of BumbleBox construction
 
 Youtube link to the animations playlist here: [here](https://www.youtube.com/playlist?list=PLHFFPE_W56kkKZQcCbZdQC42oRvphlQpn)
-
+<br /><br />
 ## BumbleBox Construction Instructions
 
 See building instructions in a google document [here](https://docs.google.com/document/d/14RvdYWr2pkWZVl2kxIvVvCeMsCQhhuTJNkAIiLYHth8/edit?usp=sharing)
-
-
-
+<br /><br />
 
 ## Software Installation and Setup
 
@@ -29,13 +27,15 @@ The below steps 1-4 are walked through in the video tutorials
 
 ### Raspberry Pi Install
 
+<br />
+
 Installed using the following hardware:
 - Rasbperry Pi 4b, 8GB RAM
 - 32GB SanDisk Ultra SD card
 - Monitor with HDMI
 - HDMI to micro-HDMI cable
 
-<br /><br />
+<br />
 
 1. Download Debian Bookworm 64-bit OS onto your SD card using a computer with the Raspberry Pi Imager application (Download the application here: https://www.raspberrypi.com/software/)
    
@@ -74,16 +74,15 @@ pip3 install scikit-video --break-system-packages
 ```bash
 pip3 install dask --break-system-packages
 ```
-<br /><br />
-
+<br />
 Amazing! You have now downloaded all the necessary packages to run the BumbleBox on the Raspberry Pi.
-
+<br /><br />
 6. Next, download the BumbleBox code onto your Raspberry Pi.  To download the code, click the green 'Code' button on the main BumbleBox page and then press the 'Download Zip' button. After downloading the folder onto the Pi and unzipping it, you might want to put the folder onto the Pi's Desktop so you can access it easily.
 
 ![download-zip-example-github](https://github.com/Crall-Lab/BumbleBox/assets/102829182/961ca94d-ce7b-4b3b-a8c8-8560dd3a271c)
 
 
-<br /><br /><br /><br /><br /><br />
+<br /><br />
 
 
 ### Install labelling software (on a separate computer, not the Raspberry Pi - install instructions tested for Mac and Linux computers so far) - this is included in the software and setup section, but this will only be used after data is collected, so it does not need to be completed prior to using the BumbleBox.
