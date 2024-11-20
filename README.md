@@ -22,6 +22,7 @@ See building instructions in a google document [here](https://docs.google.com/do
 ## Software Installation and Setup
 
 See instruction videos [here](https://www.youtube.com/channel/UCykbaZYtgNcFspMfKnfSwYA)
+The below steps 1-4 are walked through in the video tutorials 
 
 ### Raspberry Pi Install
 
@@ -36,10 +37,12 @@ Installed using the following hardware:
 2. Put the SD card into the Pi's SD card slot, hook the Pi up to a monitor via a micro-HDMI to HDMI cable, and power the Pi on - you should see the operating system load on the screen
    
 3. You will need to create a username and password for the Raspberry Pi - IMPORTANT: use 'pi' for the username, and some password you'll remember
-   
-4. Open a terminal window (look for a button on the top left of the screen that looks like a black box with a blue top and white text inside it showing '>_')
 
-5. We're now going to install the required software to use the BumbleBox code. For each of the following commands, type the command (or copy and paste) into the terminal window, and then press enter. Once you enter the command, the computer may take some time to download the required software, and will show a lot of text on the screen. Wait for each command to finish running before attempting to run the next command.
+4. Change your computer hostname to " bumblebox-XX " ex. " bumblebox-01 " or " bumblebox-11 " if you don't know how to do this on the Raspberry Pi, see this [video](https://www.youtube.com/watch?v=NSkHLyY-83s) 
+   
+5. Open a terminal window (look for a button on the top left of the screen that looks like a black box with a blue top and white text inside it showing '>_')
+
+6. We're now going to install the required software to use the BumbleBox code. For each of the following commands, type the command (or copy and paste) into the terminal window, and then press enter. Once you enter the command, the computer may take some time to download the required software, and will show a lot of text on the screen. Wait for each command to finish running before attempting to run the next command.
 
 ```bash
 pip3 install opencv-contrib-python --break-system-packages
