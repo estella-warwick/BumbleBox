@@ -29,24 +29,24 @@ def picam2_record_mjpeg(filename, outdir, recording_time=20, quality=95, size=(4
 	#picam2.start_recording(encoder,output,pts=outdir+filename+"_pts.txt")
 
 	time.sleep(recording_time)
-	
+
 	picam2.stop()
 	picam2.stop_encoder()
-	
-	
 
 
-	
+
+
+
 def folder_jpgs2mjpeg(dirpath):
 	cmd = 'for i in ' + dirpath + '*.jpg: do ffmpeg -i "$i" "${i%.*}.mjpeg"; done'
 	os.system(cmd)
-	
+
 
 
 
 
 def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir='/mnt/bombusbox/burstcapturejpgs/', filename='testpicam2_yuv2vid', imtype="y"): #make options "yuv", "rgb", "y", "all"
-	
+
 	picam2 = Picamera2()
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (4032,3040)})
 	picam2.configure(preview)
@@ -54,16 +54,16 @@ def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir=
 
 	time.sleep(2)
 	start_time = time.time()
-	
+
 	frames_dict = {}
 	i = 0
-	
-	print("beginning video capture")
+
+	print("beginning video capture in picam2_YUV420array2mjpeg()")
 	while ( (time.time() - start_time) < recording_time) or (i <= fps*recording_time):
 		timestamp = time.time() - start_time
 
 		yuv420 = picam2.capture_array()
-		
+
 		if imtype == "y":
 			yuv420 = yuv420[0:3040, :]
 		frames_dict[f"frame_{i:03d}"] = [yuv420, timestamp]
@@ -72,21 +72,21 @@ def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir=
 	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
 	sizeof = getsizeof(frames_dict)
 	print(f"Size of dictionary storing the frames (in bytes): {sizeof}")
-	
+
 	if imtype =="y":
 		for frame_number in frames_dict:
 			imlist = frames_dict[frame_number]
 			array = imlist[0]
 			y_im = Image.fromarray(array, mode="L") #L meaning a single 8-bit channel, greyscale
 			y_im.save(outdir+frame_number+".jpg", quality=quality)
-	
+
 	elif imtype =="yuv":
 		for frame_number in frames_dict:
 			imlist = frames_dict[frame_number]
 			array = imlist[0]
 			yuv_im = Image.fromarray(array, mode="YCbCr") #YCbCr meaning 3x8-bit channels for YUV
 			yuv_im.save(outdir+filename+".jpg", quality=quality)
-	
+
 	elif imtype =="rgb":
 		for frame_number in frames_dict:
 			imlist = frames_dict[frame_number]
@@ -94,7 +94,7 @@ def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir=
 			yuv_im = Image.fromarray(array, mode="YCbCr")
 			rgb_im = cv2.cvtColor(yuv_im, cv2.COLOR_YUV420p2RGB)
 			rgb_im.save(outdir+filename+".jpg", quality=quality)
-	
+
 	elif imtype == "all":
 		for frame_number in frames_dict:
 			imlist = frames_dict[frame_number]
@@ -105,11 +105,11 @@ def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir=
 			y_im.save(outdir+filename+".jpg", quality=quality)
 			yuv_im.save(outdir+filename+".jpg", quality=quality)
 			rgb_im.save(outdir+filename+".jpg", quality=quality)
-	
+
 	else:
 		print("Error: imtype must equal either 'y', 'yuv', 'rgb', or 'all'")
 		return print("Exit code: 1")
-	
+
 	print("now turning the jpgs into an mjpeg video...")
 	#cmd = 'for i in ' + outdir + '*.jpg: do ffmpeg -i "$i" "${i%.*}.mjpeg"; done'
 	#cmd = 'for i in /mnt/bombusbox/burstcapturejpgs/*.jpg; do ffmpeg -i "$i" "${i%.*}.mjpeg"; done'
@@ -118,7 +118,7 @@ def picam2_YUV420array2mjpeg(recording_time=1, quality="maximum", fps=6, outdir=
 	print("Success?")
 
 #def write_jpgs2mp4(numframes, jpgdir='/mnt/bombusbox/burstcapturejpgs', cv2.VideoWriter_fourcc(*'mp4'), fps=10, size=(4032,3040):
-	
+
 
 
 def picam2_YUV420arraycapture_timetest(recording_time=10, fps=15, quality="maximum", outdir='/mnt/bombusbox/burstcapturejpgs/', filename='testpicam2_yuv2vid', container="dict",imtype="y"): #make options "yuv", "rgb", "y", "all"
@@ -130,29 +130,29 @@ def picam2_YUV420arraycapture_timetest(recording_time=10, fps=15, quality="maxim
 
 	time.sleep(2)
 	start_time = time.time()
-	
+
 	frames_dict = {}
 	i = 0
-	
-	print("beginning video capture")
+
+	print("beginning video capture in picam2_YUV420arraycapture_timetest()")
 	while ( (time.time() - start_time) < recording_time): #or (i <= fps*recording_time):
 		timestamp = time.time() - start_time
-		
+
 		yuv420 = picam2.capture_array()
-		
-		if imtype=="y" and container=="dict": 
+
+		if imtype=="y" and container=="dict":
 			yuv420 = yuv420[0:3040, :]
 			frames_dict[f"frame_{i:03d}"] = [yuv420, timestamp]
 			#time.sleep(1/(fps+10))
 			i += 1
-		
+
 	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
 	sizeof = getsizeof(frames_dict)
 	print(f"Size of dictionary storing the frames: {sizeof}")
-	
+
 	for frame in frames_dict:
 		print(frame_number, frames_dict[frame_number][1])
-		
+
 	if imtype =="y":
 		timestamps = {}
 		save_time = time.time()
@@ -162,12 +162,12 @@ def picam2_YUV420arraycapture_timetest(recording_time=10, fps=15, quality="maxim
 			y_im = Image.fromarray(frame_array, mode="L") #L meaning a single 8-bit channel, greyscale
 			y_im.save(outdir+frame_number+".jpg", quality=quality)
 			timestamps[frame_number] = time.time() - save_time
-		
+
 		end_time = time.time()
-		
+
 		for frame_number in timestamps:
 			print(f'{frame_number}: {timestamps[frame_number]} seconds')
-			
+
 		print(f'wrote {int(len(frames_dict))} images in {end_time - save_time} seconds.\nThats an average of {int(len(frames_dict)) / (end_time - save_time)} frames per second!')
 
 
@@ -213,7 +213,7 @@ def x265vidwrite(filename, images, framerate=5, vcodec='libx265'):
 
 ### date is 5/30, trying to use just opencv to write to .mp4 or h265
 def arraycapture_2_mp4(recording_time=2, codec='mp4', fps=6, outdir='/mnt/bombusbox/', filename='testpicam2_yuv2vid', imtype="yuv"):
-	
+
 	picam2 = Picamera2()
 	preview = picam2.create_preview_configuration({"format": "YUV420", "size": (4032,3040)})
 	picam2.configure(preview)
@@ -221,15 +221,15 @@ def arraycapture_2_mp4(recording_time=2, codec='mp4', fps=6, outdir='/mnt/bombus
 
 	time.sleep(2)
 	start_time = time.time()
-	
+
 	#frames_dict = {}
 	frames_list = []
 	i = 0
-	
-	print("beginning video capture")
+
+	print("beginning video capture in arraycapture_2_mp4()")
 	while ( (time.time() - start_time) < recording_time): #or (i <= fps*recording_time):
 		timestamp = time.time() - start_time
-		
+
 		yuv420 = picam2.capture_array()
 		print(yuv420.shape)
 		frames_list.append([yuv420])
@@ -237,30 +237,30 @@ def arraycapture_2_mp4(recording_time=2, codec='mp4', fps=6, outdir='/mnt/bombus
 		#frames_dict[f"frame_{i:03d}"] = [yuv420, timestamp]
 		time.sleep(1/(fps+1))
 		i += 1
-		
+
 	print(f'finished capturing frames to arrays, captured {i} frames in {time.time()-start_time}')
 	#sizeof = getsizeof(frames_dict)
 	sizeof = getsizeof(frames_list)
 	#print(f"Size of dictionary storing the frames: {sizeof}")
-	
+
 	out = None
 	if codec == 'mp4':
 		vid_fourcc = cv2.VideoWriter_fourcc(*'mp4v')
 		out = cv2.VideoWriter('/mnt/bumblebox/data/testvideo_rgb.mp4',vid_fourcc,10,(4032,3040))
 		#out = cv2.VideoWriter('testvideo1.mp4',vid_fourcc,10,(4032,3040))
 		#out = cv2.VideoWriter('testvideo1.mp4', cv2.CAP_FFMPEG,vid_fourcc,10,(4032,3040)) #apiPreference=cv2.CAP_FFMPEG
-	
-	'''	
+
+	'''
 	#elif codec == 'h265':
-		
+
 	#	x265vidwrite('testx265.mp4',frames_list)
-	
-		
-	
+
+
+
 		#look into this for HEVC encoding: https://stackoverflow.com/questions/61260182/how-to-output-x265-compressed-video-with-cv2-videowriter
 		#vid_fourcc = cv2.VideoWriter_fourcc(*'hvc1')
 		#out = cv2.VideoWriter('testh265.mp4', cv2.CAP_FFMPEG,vid_fourcc,5,(4032,3040)) #apiPreference=cv2.CAP_FFMPEG
-		
+
 		import ffmpeg
 
 		(
@@ -270,9 +270,9 @@ def arraycapture_2_mp4(recording_time=2, codec='mp4', fps=6, outdir='/mnt/bombus
 			.output('out.mp4', vcodec='libx265')
 			.run()
 		)
-		
+
 	'''
-	
+
 	for i, im_array in enumerate(frames_list):
 		frame = im_array[0]
 		print(frame.shape)
@@ -289,18 +289,18 @@ def arraycapture_2_mp4(recording_time=2, codec='mp4', fps=6, outdir='/mnt/bombus
 		#cv2.imwrite(str(i) + "rgb.jpg", rgb_im)
 		#cv2.imwrite(str(i) + ".jpg", rgb_im)
 		out.write(rgb_im)
-		#print(f'wrote frame {img}') 
+		#print(f'wrote frame {img}')
 	out.release()
 	cv2.destroyAllWindows()
 	'''
-	
+
 # okay this is trying to get the best video compression to work for our videos, making them into HEVC compressed mp4s. Need to use FFMPEG to do it,
 # so this function would be run inside of the create mp4 from RAM function, just if HEVC compression is wanted
-# otherwise you can just use cv2.VideoWriter to make mp4s. 
+# otherwise you can just use cv2.VideoWriter to make mp4s.
 # this should be considered an alternative for more experienced users
 # right now this is just copied off of the link from above, need to test it and modify it to work inside of the function above
 def writeMp4withHEVC_CompressionFromRAM(outdir, filename, frames_list, width, height, fps):
-	
+
 	import cv2
 	import numpy as np
 	import subprocess as sp
@@ -339,16 +339,16 @@ def writeMp4withHEVC_CompressionFromRAM(outdir, filename, frames_list, width, he
 
 	# Terminate the sub-process
 	process.terminate()  # Note: We don't have to terminate the sub-process (after process.wait(), the sub-process is supposed to be closed).
-		
-	
-		
-    
+
+
+
+
 def trackTagsFromRAM(frames_list):
-	
+
 	#edit dict to be passed from outer function?
-	aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50) 
+	aruco_dict = aruco.Dictionary_get(aruco.DICT_4X4_50)
 	parameters = aruco.DetectorParameters_create()
-	
+
 	#edit these to be passed into it from outer function?
 	parameters.minMarkerPerimeterRate=0.03
 	parameters.adaptiveThreshWinSizeMin=5
@@ -361,16 +361,16 @@ def trackTagsFromRAM(frames_list):
 
 	for i in frames_list:
 		frame = i[0]
-		
+
 		try:
 		   gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
 		   clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8,8))
 		   cl1 = clahe.apply(gray)
 		   gray = cv2.cvtColor(cl1,cv2.COLOR_GRAY2RGB)
-			
+
 		except:
 			continue
-			
+
 		corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
 
 		for i in range(len(rejectedImgPoints)):
@@ -380,7 +380,7 @@ def trackTagsFromRAM(frames_list):
 			xmean_top_point = (c[0,0] + c[1,0]) / 2 #for calculating the top point of the tag
 			ymean_top_point = (c[0,1] + c[1,1]) / 2 #for calculating the top point of the tag
 			noID.append( [frame_num, "X", float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
-		
+
 		if ids is not None:
 			for i in range(len(ids)):
 				c = corners[i][0]
@@ -391,7 +391,7 @@ def trackTagsFromRAM(frames_list):
 				raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 		frame_num += 1
-		
+
 	df = pandas.DataFrame(raw)
 	df = pandas.DataFrame(raw)
 	df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY', 6:'1cm', 7:'check'})
@@ -402,15 +402,13 @@ def trackTagsFromRAM(frames_list):
 	df2.to_csv(potential_csv, index=False)
 
 	print("Average number of tags found: " + str(len(df.index)/frame_num))
-	
+
 	return df, df2, frame_num
 	'''
-		
+
 if __name__ == '__main__':
-	
+
     #picam2_YUV420arraycapture_timetest()
 	arraycapture_2_mp4()
 	#picam2_YUV420array2mjpeg()
 	#picam2_record_mjpeg('newbees1.mjpeg','/mnt/bombusbox/')
-	
-

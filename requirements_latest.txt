@@ -1,0 +1,7 @@
+opencv-contrib-python<=4.6
+pandas
+scipy
+python-crontab
+scikit-video
+dask
+numpy<2.0.0 # 2.0.0 release doesn't work with latest panda (as of Dec 2024)
