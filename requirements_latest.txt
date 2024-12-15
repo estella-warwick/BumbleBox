@@ -1,4 +1,4 @@
-opencv-contrib-python<=4.6
+opencv-contrib-python
 pandas
 scipy
 python-crontab
