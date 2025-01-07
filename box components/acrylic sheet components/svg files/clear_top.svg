@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg id="Layer_1" data-name="Layer 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 488.3792 488.3783">
+  <defs>
+    <style>
+      .cls-1 {
+        fill: none;
+        stroke: #000;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        stroke-width: .7087px;
+      }
+    </style>
+  </defs>
+  <g id="CIRCLE">
+    <circle class="cls-1" cx="456.5295" cy="456.5226" r="9.18"/>
+  </g>
+  <g id="CIRCLE-2" data-name="CIRCLE">
+    <circle class="cls-1" cx="31.8497" cy="31.8556" r="9.18"/>
+  </g>
+  <g id="CIRCLE-3" data-name="CIRCLE">
+    <circle class="cls-1" cx="456.5236" cy="31.8497" r="9.18"/>
+  </g>
+  <g id="CIRCLE-4" data-name="CIRCLE">
+    <circle class="cls-1" cx="31.8556" cy="456.5286" r="9.18"/>
+  </g>
+  <g id="SPLINE">
+    <path class="cls-1" d="m487.9975,70.8928c-.0107-38.9378-31.562-70.5064-70.4997-70.5385l-.0088,10.6179-346.5933.0274-.0029-10.6179C31.955.3924.3864,31.9437.3543,70.8815l10.6179.0088.0274,346.5923-10.6179.0029c.0107,38.9378,31.562,70.5064,70.4997,70.5385l.0088-10.6179,346.5933-.0274.0029,10.6179c38.9378-.0107,70.5064-31.562,70.5385-70.4997l-10.6179-.0088-.0274-346.5923,10.6179-.0029Z"/>
+  </g>
+</svg>

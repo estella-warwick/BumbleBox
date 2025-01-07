@@ -1,7 +1,10 @@
 import os
 import cv2
-
-
+from cv2 import aruco
+import pandas as pd
+import behavioral_metrics
+import time
+import numpy as np
 
 video_folder = '' #write the path of the video folder here inside the quotes
 frames_per_second = None
@@ -65,8 +68,9 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 		if not hasattr(cv2.aruco, tag_dictionary):
 			raise ValueError("Unknown tag dictionary: %s" % tag_dictionary)
 		tag_dictionary = getattr(cv2.aruco, tag_dictionary)
-	aruco_dict = aruco.Dictionary_get(tag_dictionary) 
-	parameters = aruco.DetectorParameters_create()
+	tag_dictionary = aruco.getPredefinedDictionary(tag_dictionary) 
+	parameters = aruco.DetectorParameters()
+	detector = aruco.ArucoDetector(tag_dictionary, parameters)
 	
 	if box_type=='custom':
 		#change these!
@@ -113,7 +117,7 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 				print('converting to grayscale didnt work...')
 				continue
 				
-			corners, ids, rejectedImgPoints = aruco.detectMarkers(gray, aruco_dict, parameters = parameters)
+			corners, ids, rejectedImgPoints = detector.detectMarkers(gray)
 
 			for i in range(len(rejectedImgPoints)):
 				c = rejectedImgPoints[i][0]
@@ -135,14 +139,14 @@ def trackTagsFromVid(filepath, todays_folder_path, filename, tag_dictionary, box
 					#raw.append( [frame_num, int(ids[i]),float(xmean), float(ymean), float(xmean_top_point), float(ymean_top_point), 100, None] ) #[[float(xmean), float(ymean)], [float(xmean_top_point), float(ymean_top_point)]] )
 
 			frame_num += 1
-			print(f"processed frame {index}")  
+			print(f"processed frame {frame_num}")  
 		
-		df = pandas.DataFrame(raw)
+		df = pd.DataFrame(raw)
 		df = df.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY'})
 		df.to_csv(todays_folder_path + filename + '_raw.csv')
 		print('saved raw csv')
 		#df.to_csv('/home/pi/Desktop/BumbleBox/testing/identified_csv.csv', index=False)
-		df2 = pandas.DataFrame(noID)
+		df2 = pd.DataFrame(noID)
 		df2 = df2.rename(columns = {0:'frame', 1:'ID', 2:'centroidX', 3:'centroidY', 4:'frontX', 5:'frontY'})
 		df2.to_csv(todays_folder_path + filename + '_noID.csv')
 		print('saved noID csv')

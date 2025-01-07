@@ -1,13 +1,13 @@
-import numpy as np
+#import numpy as np
 import cv2
-import skvideo.io
+#import skvideo.io
 import os
 #import zarr
 import dask.array as da
 import glob
 import random
 import datetime
-from record_video import create_todays_folder
+from record_video import create_todays_folder #change this so that this function sits in this script, doesnt need to be imported from record_video
 import setup
 import socket
 import argparse
@@ -72,7 +72,7 @@ def generate_nest_image(todays_folder_path, today, number_of_images, hostname, s
         h,w,d = gray_img.shape
         print("Image is 3d")
         x = da.zeros((total_frames,h,w,d)).astype('uint8')
-        print(f"x shape: {x.shape}")
+        print(f"empty image array shape: {x.shape}")
     except:
         h,w = gray_img.shape
         x = da.zeros((total_frames,h,w)).astype('uint8')
@@ -104,177 +104,22 @@ def generate_nest_image(todays_folder_path, today, number_of_images, hostname, s
             index += 1
         except Exception as e:
             print(e)
-            print('had a dimension issue, image not 3d')
+            #print('had a dimension issue, image not 3d')
             h,w = gray_img.shape
             file_dimensions.append((h,w))
             if h != file_dimensions[0][0] and w != file_dimensions[0][1]:
                 gray_img = cv2.resize(gray_img, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(gray_img.shape)
-            x[index] = gray_img
+            print(f'gray image shape: {gray_img.shape}. Empty frame shape: {x[index].shape}')
+            try:
+                x[index] = gray_img
+            except:
+                print("Skipping image, its dimensions arent the same as that of the first image in this randomized list")
             index += 1
             
     print("Computing image")
     a = da.median(x, axis=0)
     a1 = a.compute()
     
-    '''
-    thirds = int(total_frames / 3)
-    print(thirds)
-    first_set = files[0:thirds]
-    print(len(first_set))
-    second_set = files[thirds:(thirds*2)]
-    print(len(second_set))
-    third_set = files[(thirds*2):(thirds*3 -1)]
-    print(len(third_set))
-    
-    file_dimensions = []
-    index = 0
-    print("Trying to read image file!")
-    imgdata = cv2.imread(files[0])
-    print(type(imgdata))
-    try:
-        h,w,d = imgdata.shape
-        x = da.zeros((len(first_set),h,w,d))
-    except:
-        h,w = imgdata.shape
-        x = da.zeros((len(first_set),h,w))
-    
-    for file in first_set:
-    #for file in files[:total_frames]:
-        #filename = os.path.basename(filename)
-        #fname, ext = os.path.splitext(filename)
-        print(file)
-        imgdata = cv2.imread(file)
-        #videodata = skvideo.io.vread(file)
-        #f,h,w,d = videodata.shape
-        try:
-            h,w,d = imgdata.shape
-            dims = (h,w,d)
-            print(h,w,d)
-            file_dimensions.append(dims)
-            print(file_dimensions[0])
-            if dims != file_dimensions[0]:
-                print('resizing')
-                imgdata = cv2.resize(imgdata, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(imgdata.shape)
-            x[index] = imgdata
-            index += 1
-        except:
-            print('had a dimension issue')
-            h,w = imgdata.shape
-            file_dimensions.append((h,w))
-            if h != file_dimensions[0][0] and w != file_dimensions[0][1]:
-                imgdata = cv2.resize(imgdata, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(imgdata.shape)
-            x[index] = imgdata
-            index += 1
-            
-    print("Computing first set")
-    a = da.median(x, axis=0)
-    a1 = a.compute()
-    
-    del x
-    del a
-    
-    index = 0
-    
-    try:
-        h,w,d = imgdata.shape
-        x = da.zeros((len(second_set),h,w,d))
-    except:
-        h,w = imgdata.shape
-        x = da.zeros((len(second_set),h,w))
-    
-    for file in second_set:
-    #for file in files[:total_frames]:
-        #filename = os.path.basename(filename)
-        #fname, ext = os.path.splitext(filename)
-        print(file)
-        imgdata = cv2.imread(file)
-        #videodata = skvideo.io.vread(file)
-        #f,h,w,d = videodata.shape
-        try:
-            h,w,d = imgdata.shape
-            dims = (h,w,d)
-            print(h,w,d)
-            file_dimensions.append(dims)
-            print(file_dimensions[0])
-            if dims != file_dimensions[0]:
-                print('resizing')
-                imgdata = cv2.resize(imgdata, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(imgdata.shape)
-            x[index] = imgdata
-            index += 1
-        except:
-            print('had a dimension issue')
-            h,w = imgdata.shape
-            file_dimensions.append((h,w))
-            if h != file_dimensions[0][0] and w != file_dimensions[0][1]:
-                imgdata = cv2.resize(imgdata, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(imgdata.shape)
-            x[index] = imgdata
-            index += 1
-    print("Computing second set")
-    b = da.median(x, axis=0)
-    b1 = x.compute()
-    
-    alpha = 0.5
-    beta = 1.0 - alpha
-    avg_image = cv2.addWeighted(b1, alpha, a1, beta, 0.0)
-    
-    del x
-    del a1
-    del b1
-    
-    index = 0
-    
-    try:
-        h,w,d = imgdata.shape
-        x = da.zeros((len(third_set),h,w,d))
-    except:
-        h,w = imgdata.shape
-        x = da.zeros((len(third_set),h,w))
-    
-    for file in third_set:
-    #for file in files[:total_frames]:
-        #filename = os.path.basename(filename)
-        #fname, ext = os.path.splitext(filename)
-        print(file)
-        imgdata = cv2.imread(file)
-        #videodata = skvideo.io.vread(file)
-        #f,h,w,d = videodata.shape
-        try:
-            h,w,d = imgdata.shape
-            dims = (h,w,d)
-            print(h,w,d)
-            file_dimensions.append(dims)
-            print(file_dimensions[0])
-            if dims != file_dimensions[0]:
-                print('resizing')
-                imgdata = cv2.resize(imgdata, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(imgdata.shape)
-            x[index] = imgdata
-            index += 1
-        except:
-            print('had a dimension issue')
-            h,w = imgdata.shape
-            file_dimensions.append((h,w))
-            if h != file_dimensions[0][0] and w != file_dimensions[0][1]:
-                imgdata = cv2.resize(imgdata, (file_dimensions[0][1], file_dimensions[0][0]))
-            print(imgdata.shape)
-            x[index] = imgdata
-            index += 1
-    
-    c = da.median(x, axis=0)
-    c1 = x.compute()
-    
-    alpha = 0.5
-    beta = 1.0 - alpha
-    final_image = cv2.addWeighted(c1, alpha, avg_image, beta, 0.0)
-    
-    del c1
-    del avg_image
-    '''
     print("Writing image")
     #cv2.imwrite(f'{todays_folder_path}/{hostname}-{today}-nest_image.png', final_image)
     cv2.imwrite(f'{todays_folder_path}/{hostname}-{today}-nest_image.png', a1)
@@ -305,12 +150,11 @@ def main():
     #run_via_cron = None
     
     if sys.stdout.isatty():
-        print("Running generate nest image script from terminal")
+        print("Running from terminal")
         logger.debug("Running generate nest image script from terminal")
         #run_via_cron = False
-        todays_folder_path = setup.nest_images_folder_path
         
-        print(f"Running the generate_nest_images script! Remember, Im looking for images in:\n{setup.nest_images_folder_path}\nI set this path because you are running the script yourself and so are supposed to set the path yourself. I pulled the path from the variable nest_images_folder_path in the script setup.py.\nDo you want to use a different folder?")   
+        print(f"This is the generate_nest_images script! Im looking for images in:\n\n{todays_folder_path}\n\nThis is todays data folder.\nDo you want to use a different folder?")   
         print("\n")
         yes_or_no = input("Enter yes or no: ")
         
